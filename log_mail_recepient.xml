@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mailTemplates>
+    <mailTemplate>
+        <logName>test_exchanger</logName>
+        <recepients>
+            <recepient>amoshijan@gk21.ru</recepient>
+        </recepients>
+    </mailTemplate>
+</mailTemplates>

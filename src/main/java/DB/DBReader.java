@@ -5,38 +5,52 @@ import Model.LogSysEvent;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 public class DBReader {
     private static final String JDBC_PROPERTIES_FILE = "jdbc.properties";
     private static Properties propertiesDb = new Properties();
-    private static InputStream inputStream;
     private static Connection connection;
     private static Statement statement;
 
-    private static Properties readDbConProperties() throws IOException {
-        inputStream = new FileInputStream(JDBC_PROPERTIES_FILE);
+    private static void readDbConProperties() throws IOException {
+        InputStream inputStream = new FileInputStream(JDBC_PROPERTIES_FILE);
         propertiesDb.load(inputStream);
-        return propertiesDb;
     }
 
-    public static ArrayList<LogSysEvent> readSysEvent() throws IOException {
+    public static ArrayList<LogSysEvent> readSysEventList(int timeOutReading) throws IOException {
         readDbConProperties();
+        ArrayList<LogSysEvent> logList = logList = new ArrayList<LogSysEvent>();
+        ResultSet rs;
         try {
             connection =  DriverManager.getConnection(propertiesDb.getProperty("url"),
                     propertiesDb.getProperty("login"),
                     propertiesDb.getProperty("password"));
 
             statement = connection.createStatement();
-            String query = "select ...";
-            statement.execute(query);
+            String query = "select ReceivedAt" +
+                    " ,DeviceReportedTime" +
+                    " ,Facility" +
+                    " ,Priority" +
+                    " ,FromHost" +
+                    " ,Message" +
+                    " ,SysLogTag" +
+                    " from syslog.systemevents t" +
+                    " where t.ReceivedAt >= date_sub(now(), interval " +timeOutReading + " minute)\n" +
+                    "  and t.ReceivedAt < now();";
+            rs = statement.executeQuery(query);
 
+            while (rs.next()) {
+                logList.add(new LogSysEvent(rs.getDate("ReceivedAt"),
+                        rs.getDate("DeviceReportedTime"),
+                        rs.getInt("Facility"),
+                        rs.getInt("Priority"),
+                        rs.getString("FromHost"),
+                        rs.getString("Message"),
+                        rs.getString("SysLogTag")));
+            }
         }catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         } finally {
@@ -51,7 +65,7 @@ public class DBReader {
                 e.printStackTrace();
             }
         }
-        return null;
+        return logList;
     }
 
 }
