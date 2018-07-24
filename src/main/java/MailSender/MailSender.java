@@ -13,9 +13,9 @@ public class MailSender {
 
     private static final String MAIL_SETTINGS_FILE = "app.properties";
     private static Properties mailProperties;
-    
-    public void sendMailToRecipient(List<MailTemplate> mailTemplateList) {
 
+    public void sendMailToRecipient(List<MailTemplate> mailTemplateList) {
+        
     }
 
     private void readEmailSettings() {
