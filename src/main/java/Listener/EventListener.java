@@ -1,6 +1,6 @@
 package Listener;
 
 public interface EventListener {
-    void listen();
+    void listenNewEvent();
     void sendMail();
 }

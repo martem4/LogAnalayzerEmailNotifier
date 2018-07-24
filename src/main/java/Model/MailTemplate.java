@@ -1,5 +1,7 @@
 package Model;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
@@ -7,13 +9,13 @@ import java.util.List;
 public class MailTemplate {
     public MailTemplate() {}
 
-    public MailTemplate(String logName, List<String> recepients) {
+    public MailTemplate(String logName, List<String> recipients) {
         this.logName = logName;
-        this.recepients = recepients;
+        this.recipients = recipients;
     }
 
     String logName;
-    List<String> recepients;
+    List<String> recipients;
 
     public String getLogName() {
         return logName;
@@ -23,11 +25,13 @@ public class MailTemplate {
         this.logName = logName;
     }
 
-    public List<String> getRecepients() {
-        return recepients;
+    @XmlElementWrapper
+    @XmlElement(name = "recipient")
+    public List<String> getRecipients() {
+        return recipients;
     }
 
-    public void setRecepients(List<String> recepients) {
-        this.recepients = recepients;
+    public void setRecipients(List<String> recipients) {
+        this.recipients = recipients;
     }
 }

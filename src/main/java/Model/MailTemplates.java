@@ -8,19 +8,19 @@ import java.util.List;
 public class MailTemplates {
     public MailTemplates() { }
 
-    List<MailTemplate> mailTemplates;
+    List<MailTemplate> mailTemplate;
 
-    public MailTemplates(List<MailTemplate> mailTemplates) {
+    public MailTemplates(List<MailTemplate> mailTemplate) {
         super();
-        this.mailTemplates = mailTemplates;
+        this.mailTemplate = mailTemplate;
     }
 
     @XmlElement
-    public List<MailTemplate> getMailTemplates() {
-        return mailTemplates;
+    public List<MailTemplate> getMailTemplate() {
+        return mailTemplate;
     }
 
-    public void setMailTemplates(List<MailTemplate> mailTemplates) {
-        this.mailTemplates = mailTemplates;
+    public void setMailTemplate(List<MailTemplate> mailTemplate) {
+        this.mailTemplate = mailTemplate;
     }
 }

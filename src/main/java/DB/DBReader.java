@@ -20,9 +20,9 @@ public class DBReader {
         propertiesDb.load(inputStream);
     }
 
-    public static ArrayList<LogSysEvent> readSysEventList(int timeOutReading) throws IOException {
+    public static ArrayList<LogSysEvent> getSysEventList(int timeOutReading) throws IOException {
         readDbConProperties();
-        ArrayList<LogSysEvent> logList = logList = new ArrayList<LogSysEvent>();
+        ArrayList<LogSysEvent> sysEventList = new ArrayList<LogSysEvent>();
         ResultSet rs;
         try {
             connection =  DriverManager.getConnection(propertiesDb.getProperty("url"),
@@ -43,7 +43,7 @@ public class DBReader {
             rs = statement.executeQuery(query);
 
             while (rs.next()) {
-                logList.add(new LogSysEvent(rs.getDate("ReceivedAt"),
+                sysEventList.add(new LogSysEvent(rs.getDate("ReceivedAt"),
                         rs.getDate("DeviceReportedTime"),
                         rs.getInt("Facility"),
                         rs.getInt("Priority"),
@@ -65,7 +65,7 @@ public class DBReader {
                 e.printStackTrace();
             }
         }
-        return logList;
+        return sysEventList;
     }
 
 }

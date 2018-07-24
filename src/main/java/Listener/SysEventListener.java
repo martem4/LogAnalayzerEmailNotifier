@@ -17,17 +17,17 @@ public class SysEventListener implements EventListener {
 
     private static boolean READ = true;
     private static final int TIMEOUT_READING_SECONDS = 60;
-    private static final String MAIL_TEMPLATE_RECEPIENT = "log_mail_recepient.xml";
+    private static final String MAIL_TEMPLATE_RECIPIENTS = "log_mail_recipient.xml";
 
-    ArrayList<LogSysEvent> logList;
+    ArrayList<LogSysEvent> sysEventList;
 
-    public void listen() {
+    public void listenNewEvent() {
         List<MailTemplate> mailTemplates = readMailTemplate();
         while(READ) {
             try {
-                logList = DBReader.readSysEventList(TIMEOUT_READING_SECONDS);
-                if (logList.size() != 0) {
-                    System.out.println(Arrays.toString(logList.toArray()));
+                sysEventList = DBReader.getSysEventList(TIMEOUT_READING_SECONDS);
+                if (sysEventList.size() != 0) {
+                    System.out.println(Arrays.toString(sysEventList.toArray()));
                 }
                 Thread.sleep(TIMEOUT_READING_SECONDS*1000);
             } catch (IOException e) {
@@ -41,10 +41,10 @@ public class SysEventListener implements EventListener {
     private List<MailTemplate> readMailTemplate() {
         List<MailTemplate> mailTemplateList = null;
         try {
-            File mailTemplateXml = new File(MAIL_TEMPLATE_RECEPIENT);
+            File mailTemplateXml = new File(MAIL_TEMPLATE_RECIPIENTS);
             JAXBContext jaxbContext = JAXBContext.newInstance(MailTemplates.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            mailTemplateList = ((MailTemplates)unmarshaller.unmarshal(mailTemplateXml)).getMailTemplates();
+            mailTemplateList = ((MailTemplates)unmarshaller.unmarshal(mailTemplateXml)).getMailTemplate();
         }catch (Exception e) {
             e.printStackTrace();
         }
