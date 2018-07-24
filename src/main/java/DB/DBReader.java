@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 public class DBReader {
-    private static final String JDBC_PROPERTIES_FILE = "jdbc.properties";
+    private static final String JDBC_PROPERTIES_FILE = "app.properties";
     private static Properties propertiesDb = new Properties();
     private static Connection connection;
     private static Statement statement;
