@@ -25,9 +25,9 @@ public class DBReader {
         ArrayList<LogSysEvent> sysEventList = new ArrayList<LogSysEvent>();
         ResultSet rs;
         try {
-            connection =  DriverManager.getConnection(propertiesDb.getProperty("url"),
-                    propertiesDb.getProperty("login"),
-                    propertiesDb.getProperty("password"));
+            connection =  DriverManager.getConnection(propertiesDb.getProperty("db.url"),
+                    propertiesDb.getProperty("db.login"),
+                    propertiesDb.getProperty("db.password"));
 
             statement = connection.createStatement();
             String query = "select ReceivedAt" +

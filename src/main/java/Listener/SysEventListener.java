@@ -1,6 +1,7 @@
 package Listener;
 
 import DB.DBReader;
+import MailSender.MailSender;
 import Model.LogSysEvent;
 import Model.MailTemplate;
 import Model.MailTemplates;
@@ -10,7 +11,6 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class SysEventListener implements EventListener {
@@ -27,7 +27,9 @@ public class SysEventListener implements EventListener {
             try {
                 sysEventList = DBReader.getSysEventList(TIMEOUT_READING_SECONDS);
                 if (sysEventList.size() != 0) {
-                    System.out.println(Arrays.toString(sysEventList.toArray()));
+                    for (LogSysEvent logSysEvent : sysEventList) {
+                        MailSender.sendMailToRecipient(mailTemplates, logSysEvent);
+                    }
                 }
                 Thread.sleep(TIMEOUT_READING_SECONDS*1000);
             } catch (IOException e) {
