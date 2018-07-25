@@ -38,7 +38,7 @@ public class DBReader {
                     " ,Message" +
                     " ,SysLogTag" +
                     " from syslog.systemevents t" +
-                    " where t.ReceivedAt >= date_sub(now(), interval " +timeOutReading + " minute )\n" +
+                    " where t.ReceivedAt >= date_sub(now(), interval " +timeOutReading + " second )\n" +
                     "  and t.ReceivedAt < now();";
             rs = statement.executeQuery(query);
 
