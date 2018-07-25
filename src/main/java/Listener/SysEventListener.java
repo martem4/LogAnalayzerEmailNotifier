@@ -11,9 +11,9 @@ import java.util.List;
 public class SysEventListener implements EventListener {
 
     private static boolean READ = true;
-    private static final int TIMEOUT_READING_SECONDS = 160;
+    private static final int TIMEOUT_READING_SECONDS = 60;
 
-    ArrayList<LogSysEvent> sysEventList;
+    private ArrayList<LogSysEvent> sysEventList;
 
     public void listenNewEvent() {
         List<MailTemplate> mailTemplates = MailSender.readMailTemplate();

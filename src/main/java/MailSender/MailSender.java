@@ -24,6 +24,7 @@ public class MailSender {
             for (MailTemplate mailTemplate : mailTemplateList) {
                 for (String recipient : mailTemplate.getRecipients()) {
                     sendMail(recipient, logSysEvent.getMessage(), logSysEvent.getSysLogTag());
+                    System.out.println(mailTemplateList.size() + " logs sended to " + recipient);
                 }
             }
         }
