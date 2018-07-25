@@ -4,10 +4,7 @@ import Model.LogSysEvent;
 import Model.MailTemplate;
 import Model.MailTemplates;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.xml.bind.JAXBContext;
@@ -20,12 +17,7 @@ public class MailSender {
 
     private static final String MAIL_SETTINGS_FILE = "app.properties";
     private static final String MAIL_TEMPLATE_RECIPIENTS = "log_mail_recipient.xml";
-    private static Properties mailProperties;
-
-    public MailSender(){
-        super();
-        readEmailSettings();
-    }
+    private static Properties mailProperties = new Properties();
 
     public static void sendMailToRecipient(List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
         if (mailTemplateList != null) {
@@ -37,8 +29,8 @@ public class MailSender {
         }
     }
 
-    private void readEmailSettings() {
-        InputStream inputStream = null;
+    private static Properties readEmailSettings() {
+        FileInputStream inputStream = null;
         try {
             inputStream = new FileInputStream(MAIL_SETTINGS_FILE);
         } catch (FileNotFoundException e) {
@@ -49,10 +41,21 @@ public class MailSender {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return mailProperties;
     }
 
     private static void sendMail(String recipientMail, String messgage, String programName) {
-        Session session = Session.getDefaultInstance(mailProperties);
+        mailProperties = readEmailSettings();
+        Session session = Session.getDefaultInstance(mailProperties,
+                new Authenticator() {
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(mailProperties
+                                .getProperty("mail.smtp.user"), mailProperties
+                                .getProperty("mail.smtp.password"));
+                    }
+                });
+
         MimeMessage mimeMessage = new MimeMessage(session);
         try {
             mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(recipientMail));

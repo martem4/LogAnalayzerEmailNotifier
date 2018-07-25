@@ -11,7 +11,7 @@ import java.util.List;
 public class SysEventListener implements EventListener {
 
     private static boolean READ = true;
-    private static final int TIMEOUT_READING_SECONDS = 60;
+    private static final int TIMEOUT_READING_SECONDS = 160;
 
     ArrayList<LogSysEvent> sysEventList;
 
