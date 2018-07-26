@@ -21,9 +21,11 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <finalName>loganalyzeremailnotifier</finalName>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
                             <mainClass>Main</mainClass>
