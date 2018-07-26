@@ -16,16 +16,16 @@ import java.util.Properties;
 public class MailSender {
 
     private static final String MAIL_SETTINGS_FILE = "app.properties";
+    private static String LOGANALYZER_LOG_LINK_TEMPLATE="http://172.172.174.100/loganalyzer/details.php?uid=";
     private static final String MAIL_TEMPLATE_RECIPIENTS = "log_mail_recipient.xml";
     private static Properties mailProperties = new Properties();
 
     public static void sendMailToRecipient(List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
         if (mailTemplateList != null) {
             for (MailTemplate mailTemplate : mailTemplateList) {
-                if (mailTemplate.getLogName() == logSysEvent.getSysLogTag()) {
+                if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
                     for (String recipient : mailTemplate.getRecipients()) {
                         sendMail(recipient, logSysEvent.getMessage(), logSysEvent.getSysLogTag());
-                        System.out.println("Logs sended to " + recipient);
                     }
                 }
             }
@@ -63,7 +63,7 @@ public class MailSender {
         try {
             mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(recipientMail));
             mimeMessage.setSubject(programName);
-            mimeMessage.setText(messgage);
+            mimeMessage.setText(messgage + "\n" + LOGANALYZER_LOG_LINK_TEMPLATE);
             Transport.send(mimeMessage);
         } catch (MessagingException e) {
             e.printStackTrace();
