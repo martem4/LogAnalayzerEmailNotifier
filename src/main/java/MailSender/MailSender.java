@@ -63,7 +63,7 @@ public class MailSender {
         try {
             mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(recipientMail));
             mimeMessage.setSubject(programName);
-            mimeMessage.setText(messgage + "\n" + LOGANALYZER_LOG_LINK_TEMPLATE + id);
+            mimeMessage.setText(LOGANALYZER_LOG_LINK_TEMPLATE + id + "\n" + messgage);
             Transport.send(mimeMessage);
         } catch (MessagingException e) {
             e.printStackTrace();
