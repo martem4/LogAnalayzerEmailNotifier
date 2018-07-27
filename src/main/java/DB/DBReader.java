@@ -30,7 +30,8 @@ public class DBReader {
                     propertiesDb.getProperty("db.password"));
 
             statement = connection.createStatement();
-            String query = "select ReceivedAt" +
+            String query = "select ID" +
+                    " ,ReceivedAt" +
                     " ,DeviceReportedTime" +
                     " ,Facility" +
                     " ,Priority" +
@@ -43,7 +44,8 @@ public class DBReader {
             rs = statement.executeQuery(query);
 
             while (rs.next()) {
-                sysEventList.add(new LogSysEvent(rs.getDate("ReceivedAt"),
+                sysEventList.add(new LogSysEvent(rs.getInt("ID"),
+                        rs.getDate("ReceivedAt"),
                         rs.getDate("DeviceReportedTime"),
                         rs.getInt("Facility"),
                         rs.getInt("Priority"),

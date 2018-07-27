@@ -32,6 +32,15 @@ public class LogSysEvent {
         return sysLogTag;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    private int id;
     private Date receivedAt;
     private Date deviceReportedTime;
     private int facility;
@@ -40,8 +49,10 @@ public class LogSysEvent {
     private String message;
     private String sysLogTag;
 
-    public LogSysEvent(Date receivedAt, Date deviceReportedTime, int facility, int priority, String fromHost,
+
+    public LogSysEvent(int id, Date receivedAt, Date deviceReportedTime, int facility, int priority, String fromHost,
                        String message, String sysLogTag) {
+        this.id = id;
         this.receivedAt = receivedAt;
         this.deviceReportedTime = deviceReportedTime;
         this.facility = facility;

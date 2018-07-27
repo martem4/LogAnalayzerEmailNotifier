@@ -25,7 +25,7 @@ public class MailSender {
             for (MailTemplate mailTemplate : mailTemplateList) {
                 if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
                     for (String recipient : mailTemplate.getRecipients()) {
-                        sendMail(recipient, logSysEvent.getMessage(), logSysEvent.getSysLogTag());
+                        sendMail(recipient, logSysEvent.getMessage(), logSysEvent.getSysLogTag(), logSysEvent.getId());
                     }
                 }
             }
@@ -47,7 +47,7 @@ public class MailSender {
         return mailProperties;
     }
 
-    private static void sendMail(String recipientMail, String messgage, String programName) {
+    private static void sendMail(String recipientMail, String messgage, String programName, int id) {
         mailProperties = readEmailSettings();
         Session session = Session.getDefaultInstance(mailProperties,
                 new Authenticator() {
@@ -63,7 +63,7 @@ public class MailSender {
         try {
             mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(recipientMail));
             mimeMessage.setSubject(programName);
-            mimeMessage.setText(messgage + "\n" + LOGANALYZER_LOG_LINK_TEMPLATE);
+            mimeMessage.setText(messgage + "\n" + LOGANALYZER_LOG_LINK_TEMPLATE + id);
             Transport.send(mimeMessage);
         } catch (MessagingException e) {
             e.printStackTrace();
