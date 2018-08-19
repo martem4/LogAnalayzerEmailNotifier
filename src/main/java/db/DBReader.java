@@ -1,7 +1,6 @@
-package DB;
+package db;
 
-import Model.LogSysEvent;
-
+import model.LogSysEvent;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,25 +10,38 @@ import java.util.Properties;
 
 public class DBReader {
     private static final String JDBC_PROPERTIES_FILE = "app.properties";
-    private static Properties propertiesDb = new Properties();
-    private static Connection connection;
-    private static Statement statement;
 
-    private static void readDbConProperties() throws IOException {
+    private Properties readDbConProperties() throws IOException {
+        Properties propertiesDb = new Properties();
         InputStream inputStream = new FileInputStream(JDBC_PROPERTIES_FILE);
         propertiesDb.load(inputStream);
+        return propertiesDb;
     }
 
-    public static ArrayList<LogSysEvent> getSysEventList(int timeOutReading) throws IOException {
-        readDbConProperties();
-        ArrayList<LogSysEvent> sysEventList = new ArrayList<LogSysEvent>();
-        ResultSet rs;
+    private Connection getConnectionToDb() {
+        Properties propertiesDb = null;
         try {
-            connection =  DriverManager.getConnection(propertiesDb.getProperty("db.url"),
+            propertiesDb = readDbConProperties();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            return DriverManager.getConnection(propertiesDb.getProperty("db.url"),
                     propertiesDb.getProperty("db.login"),
                     propertiesDb.getProperty("db.password"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-            statement = connection.createStatement();
+    public ArrayList<LogSysEvent> getSysEventList(int timeOutReading) throws SQLException {
+        ArrayList<LogSysEvent> sysEventList = new ArrayList<LogSysEvent>();
+        Statement statement = null;
+        ResultSet rs;
+        try {
+            statement = getConnectionToDb().createStatement();
             String query = "select ID" +
                     " ,ReceivedAt" +
                     " ,DeviceReportedTime" +
@@ -39,7 +51,7 @@ public class DBReader {
                     " ,Message" +
                     " ,SysLogTag" +
                     " from syslog.systemevents t" +
-                    " where t.ReceivedAt >= date_sub(now(), interval " +timeOutReading + " second )\n" +
+                    " where t.ReceivedAt >= date_sub(now(), interval " + timeOutReading + " second )\n" +
                     "  and t.ReceivedAt < now();";
             rs = statement.executeQuery(query);
 
@@ -53,19 +65,11 @@ public class DBReader {
                         rs.getString("Message"),
                         rs.getString("SysLogTag")));
             }
-        }catch (SQLException sqlEx) {
-            sqlEx.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            statement.getConnection().close();
         }
         return sysEventList;
     }

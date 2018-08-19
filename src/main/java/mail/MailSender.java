@@ -1,8 +1,8 @@
-package MailSender;
+package mail;
 
-import Model.LogSysEvent;
-import Model.MailTemplate;
-import Model.MailTemplates;
+import model.LogSysEvent;
+import model.MailTemplate;
+import model.MailTemplates;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -20,7 +20,7 @@ public class MailSender {
     private static final String MAIL_TEMPLATE_RECIPIENTS = "log_mail_recipient.xml";
     private static Properties mailProperties = new Properties();
 
-    public static void sendMailToRecipient(List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
+    public void sendMailToRecipient(List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
         if (mailTemplateList != null) {
             for (MailTemplate mailTemplate : mailTemplateList) {
                 if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {

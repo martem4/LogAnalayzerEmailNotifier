@@ -1,9 +1,9 @@
-package Listener;
+package listener;
 
-import DB.DBReader;
-import MailSender.MailSender;
-import Model.LogSysEvent;
-import Model.MailTemplate;
+import db.DBReader;
+import mail.MailSender;
+import model.LogSysEvent;
+import model.MailTemplate;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
