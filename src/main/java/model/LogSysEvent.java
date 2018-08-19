@@ -1,44 +1,10 @@
 package model;
 
+import lombok.Data;
+
 import java.sql.Date;
 
-public class LogSysEvent {
-
-    public Date getReceivedAt() {
-        return receivedAt;
-    }
-
-    public Date getDeviceReportedTime() {
-        return deviceReportedTime;
-    }
-
-    public int getFacility() {
-        return facility;
-    }
-
-    public int getPriority() {
-        return priority;
-    }
-
-    public String getFromHost() {
-        return fromHost;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getSysLogTag() {
-        return sysLogTag;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+@Data public class LogSysEvent {
 
     private int id;
     private Date receivedAt;

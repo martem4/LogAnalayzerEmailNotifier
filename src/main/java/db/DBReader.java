@@ -1,5 +1,6 @@
 package db;
 
+import lombok.Cleanup;
 import model.LogSysEvent;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,7 +14,7 @@ public class DBReader {
 
     private Properties readDbConProperties() throws IOException {
         Properties propertiesDb = new Properties();
-        InputStream inputStream = new FileInputStream(JDBC_PROPERTIES_FILE);
+        @Cleanup InputStream inputStream = new FileInputStream(JDBC_PROPERTIES_FILE);
         propertiesDb.load(inputStream);
         return propertiesDb;
     }

@@ -1,5 +1,7 @@
 package mail;
 
+import lombok.Cleanup;
+import lombok.NonNull;
 import model.LogSysEvent;
 import model.MailTemplate;
 import model.MailTemplates;
@@ -20,20 +22,19 @@ public class MailSender {
     private static final String MAIL_TEMPLATE_RECIPIENTS = "log_mail_recipient.xml";
     private static Properties mailProperties = new Properties();
 
-    public void sendMailToRecipient(List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
-        if (mailTemplateList != null) {
-            for (MailTemplate mailTemplate : mailTemplateList) {
-                if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
-                    for (String recipient : mailTemplate.getRecipients()) {
-                        sendMail(recipient, logSysEvent.getMessage(), logSysEvent.getSysLogTag(), logSysEvent.getId());
-                    }
+    public void sendMailToRecipient(@NonNull List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
+
+        for (MailTemplate mailTemplate : mailTemplateList) {
+            if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
+                for (String recipient : mailTemplate.getRecipients()) {
+                    sendMail(recipient, logSysEvent.getMessage(), logSysEvent.getSysLogTag(), logSysEvent.getId());
                 }
             }
         }
     }
 
     private static Properties readEmailSettings() {
-        FileInputStream inputStream = null;
+        @Cleanup FileInputStream inputStream = null;
         try {
             inputStream = new FileInputStream(MAIL_SETTINGS_FILE);
         } catch (FileNotFoundException e) {
