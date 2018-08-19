@@ -5,6 +5,7 @@ import mail.MailSender;
 import model.LogSysEvent;
 import model.MailTemplate;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,16 +20,16 @@ public class SysEventListener implements EventListener {
         List<MailTemplate> mailTemplates = MailSender.readMailTemplate();
         while(READ) {
             try {
-                sysEventList = DBReader.getSysEventList(TIMEOUT_READING_SECONDS);
+                sysEventList = new DBReader().getSysEventList(TIMEOUT_READING_SECONDS);
                 if (sysEventList.size() != 0) {
                     for (LogSysEvent logSysEvent : sysEventList) {
-                        MailSender.sendMailToRecipient(mailTemplates, logSysEvent);
+                        new MailSender().sendMailToRecipient(mailTemplates, logSysEvent);
                     }
                 }
                 Thread.sleep(TIMEOUT_READING_SECONDS*1000);
-            } catch (IOException e) {
-                e.printStackTrace();
             } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
