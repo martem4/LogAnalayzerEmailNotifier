@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import mail.MailService;
 import model.LogSysEvent;
 import model.MailTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;

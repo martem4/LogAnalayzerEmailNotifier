@@ -5,6 +5,7 @@ import lombok.NonNull;
 import model.LogSysEvent;
 import model.MailTemplate;
 import model.MailTemplates;
+import org.springframework.stereotype.Service;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -20,6 +21,10 @@ public class MailService {
     private static String LOGANALYZER_LOG_LINK_TEMPLATE="http://172.172.174.100/loganalyzer/details.php?uid=";
     private static final String MAIL_TEMPLATE_RECIPIENTS = "log_mail_recipient.xml";
     private static Properties mailProperties = new Properties();
+
+    public MailService(){
+
+    }
 
     private Properties readEmailSettings() {
         @Cleanup FileInputStream inputStream = null;
