@@ -34,7 +34,7 @@ public class SysEventListener implements EventListener {
             }
         }
     }
-    public void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
+    private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
         for (MailTemplate mailTemplate : mailTemplateList) {
             if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
                 for (String recipient : mailTemplate.getRecipients()) {
