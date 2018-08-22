@@ -15,25 +15,13 @@ import java.io.*;
 import java.util.List;
 import java.util.Properties;
 
-public class MailSender {
-
+public class MailService {
     private static final String MAIL_SETTINGS_FILE = "app.properties";
     private static String LOGANALYZER_LOG_LINK_TEMPLATE="http://172.172.174.100/loganalyzer/details.php?uid=";
     private static final String MAIL_TEMPLATE_RECIPIENTS = "log_mail_recipient.xml";
     private static Properties mailProperties = new Properties();
 
-    public void sendMailToRecipient(@NonNull List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
-
-        for (MailTemplate mailTemplate : mailTemplateList) {
-            if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
-                for (String recipient : mailTemplate.getRecipients()) {
-                    sendMail(recipient, logSysEvent.getMessage(), logSysEvent.getSysLogTag(), logSysEvent.getId());
-                }
-            }
-        }
-    }
-
-    private static Properties readEmailSettings() {
+    private Properties readEmailSettings() {
         @Cleanup FileInputStream inputStream = null;
         try {
             inputStream = new FileInputStream(MAIL_SETTINGS_FILE);
@@ -48,7 +36,7 @@ public class MailSender {
         return mailProperties;
     }
 
-    private static void sendMail(String recipientMail, String messgage, String programName, int id) {
+    public void sendMail(String recipientMail, String messgage, String programName, int id) {
         mailProperties = readEmailSettings();
         Session session = Session.getDefaultInstance(mailProperties,
                 new Authenticator() {
@@ -71,7 +59,7 @@ public class MailSender {
         }
     }
 
-    public static List<MailTemplate> readMailTemplate() {
+    public List<MailTemplate> readMailTemplate() {
         List<MailTemplate> mailTemplateList = null;
         try {
             File mailTemplateXml = new File(MAIL_TEMPLATE_RECIPIENTS);

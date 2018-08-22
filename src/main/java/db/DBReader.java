@@ -2,6 +2,7 @@ package db;
 
 import lombok.Cleanup;
 import model.LogSysEvent;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,13 +44,7 @@ public class DBReader {
         ResultSet rs;
         try {
             statement = getConnectionToDb().createStatement();
-            String query = "select ID" +
-                    " ,ReceivedAt" +
-                    " ,DeviceReportedTime" +
-                    " ,Facility" +
-                    " ,Priority" +
-                    " ,FromHost" +
-                    " ,Message" +
+            String query = "select ID ,ReceivedAt ,DeviceReportedTime ,Facility ,Priority ,FromHost ,Message" +
                     " ,SysLogTag" +
                     " from syslog.systemevents t" +
                     " where t.ReceivedAt >= date_sub(now(), interval " + timeOutReading + " second )\n" +
@@ -68,8 +63,7 @@ public class DBReader {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             statement.getConnection().close();
         }
         return sysEventList;
