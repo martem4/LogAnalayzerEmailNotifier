@@ -1,28 +1,37 @@
-package listener;
+package century.loganalyzeremailnotifier.listener;
 
-import db.DBReader;
+import century.loganalyzeremailnotifier.db.DbReaderService;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-import mail.MailService;
-import model.LogSysEvent;
-import model.MailTemplate;
+import century.loganalyzeremailnotifier.mail.MailService;
+import century.loganalyzeremailnotifier.model.LogSysEvent;
+import century.loganalyzeremailnotifier.model.MailTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
-public class SysEventListener implements EventListener {
+@Service
+public class SysEventListenerService implements EventListener {
 
     private static boolean READ = true;
     private static final int TIMEOUT_READING_SECONDS = 60;
 
+    private final MailService mailService;
+    private final DbReaderService dbReaderService;
+
+    @Autowired
+    public SysEventListenerService(MailService mailService, DbReaderService dbReaderService) {
+        this.dbReaderService = dbReaderService;
+        this.mailService = mailService;
+    }
+
     public void listenNewEvent() {
-        List<MailTemplate> mailTemplates = new MailService().readMailTemplate();
+        List<MailTemplate> mailTemplates = mailService.readMailTemplate();
         while(READ) {
             try {
-                ArrayList<LogSysEvent> sysEventList = new DBReader().getSysEventList(TIMEOUT_READING_SECONDS);
+                ArrayList<LogSysEvent> sysEventList = dbReaderService.getSysEventList(TIMEOUT_READING_SECONDS);
                 if (sysEventList.size() != 0) {
                     for (LogSysEvent logSysEvent : sysEventList) {
                         sendMailByTemplate(mailTemplates, logSysEvent);
@@ -40,7 +49,7 @@ public class SysEventListener implements EventListener {
         for (MailTemplate mailTemplate : mailTemplateList) {
             if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
                 for (String recipient : mailTemplate.getRecipients()) {
-                    new MailService().sendMail(recipient, logSysEvent.getMessage(), logSysEvent.getSysLogTag(),
+                    mailService.sendMail(recipient, logSysEvent.getMessage(), logSysEvent.getSysLogTag(),
                             logSysEvent.getId());
                 }
             }

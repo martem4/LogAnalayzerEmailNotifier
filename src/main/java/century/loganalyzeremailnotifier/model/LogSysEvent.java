@@ -1,4 +1,4 @@
-package model;
+package century.loganalyzeremailnotifier.model;
 
 import lombok.Data;
 

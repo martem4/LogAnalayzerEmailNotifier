@@ -1,10 +1,8 @@
-package mail;
+package century.loganalyzeremailnotifier.mail;
 
 import lombok.Cleanup;
-import lombok.NonNull;
-import model.LogSysEvent;
-import model.MailTemplate;
-import model.MailTemplates;
+import century.loganalyzeremailnotifier.model.MailTemplate;
+import century.loganalyzeremailnotifier.model.MailTemplates;
 import org.springframework.stereotype.Service;
 
 import javax.mail.*;
@@ -16,18 +14,15 @@ import java.io.*;
 import java.util.List;
 import java.util.Properties;
 
+@Service
 public class MailService {
     private static final String MAIL_SETTINGS_FILE = "app.properties";
     private static String LOGANALYZER_LOG_LINK_TEMPLATE="http://172.172.174.100/loganalyzer/details.php?uid=";
     private static final String MAIL_TEMPLATE_RECIPIENTS = "log_mail_recipient.xml";
     private static Properties mailProperties = new Properties();
 
-    public MailService(){
-
-    }
-
-    private Properties readEmailSettings() {
-        @Cleanup FileInputStream inputStream = null;
+     private Properties readEmailSettings() {
+        FileInputStream inputStream = null;
         try {
             inputStream = new FileInputStream(MAIL_SETTINGS_FILE);
         } catch (FileNotFoundException e) {

@@ -1,7 +1,8 @@
-package db;
+package century.loganalyzeremailnotifier.db;
 
 import lombok.Cleanup;
-import model.LogSysEvent;
+import century.loganalyzeremailnotifier.model.LogSysEvent;
+import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,7 +11,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Properties;
 
-public class DBReader {
+@Service
+public class DbReaderService {
     private static final String JDBC_PROPERTIES_FILE = "app.properties";
 
     private Properties readDbConProperties() throws IOException {

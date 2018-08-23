@@ -1,4 +1,4 @@
-package model;
+package century.loganalyzeremailnotifier.model;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
