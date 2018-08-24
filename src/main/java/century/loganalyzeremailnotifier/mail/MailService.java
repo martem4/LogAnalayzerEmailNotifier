@@ -1,6 +1,5 @@
 package century.loganalyzeremailnotifier.mail;
 
-import lombok.Cleanup;
 import century.loganalyzeremailnotifier.model.MailTemplate;
 import century.loganalyzeremailnotifier.model.MailTemplates;
 import org.springframework.stereotype.Service;
