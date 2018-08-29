@@ -31,7 +31,7 @@ public class SysEventListenerService implements EventListener {
         List<MailTemplate> mailTemplates = mailService.readMailTemplate();
         while(READ) {
             try {
-                ArrayList<LogSysEvent> sysEventList = dbReaderService.getSysEventList(TIMEOUT_READING_SECONDS);
+                ArrayList<LogSysEvent> sysEventList = dbReaderService.getLogSysEventList(TIMEOUT_READING_SECONDS);
                 if (sysEventList.size() != 0) {
                     for (LogSysEvent logSysEvent : sysEventList) {
                         sendMailByTemplate(mailTemplates, logSysEvent);
