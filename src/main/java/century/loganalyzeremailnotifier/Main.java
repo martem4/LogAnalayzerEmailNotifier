@@ -1,16 +1,16 @@
 package century.loganalyzeremailnotifier;
 
-import century.loganalyzeremailnotifier.listener.SysEventListenerService;
+import century.loganalyzeremailnotifier.listener.LogSysEventListenerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
 public class Main {
-    private final SysEventListenerService sysEventListenerService;
+    private final LogSysEventListenerService logSysEventListenerService;
     @Autowired
-    public Main(SysEventListenerService sysEventListenerService) {
-        this.sysEventListenerService = sysEventListenerService;
+    public Main(LogSysEventListenerService logSysEventListenerService) {
+        this.logSysEventListenerService = logSysEventListenerService;
     }
     public static void main(String[] args) {
         final AnnotationConfigApplicationContext annotationConfigApplicationContext =
@@ -20,6 +20,6 @@ public class Main {
     }
 
     private void startListenLogEvents() {
-        sysEventListenerService.listenNewEvent();
+        logSysEventListenerService.listenNewEvent();
     }
 }

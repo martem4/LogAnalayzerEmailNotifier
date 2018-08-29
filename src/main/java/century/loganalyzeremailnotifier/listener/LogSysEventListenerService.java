@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class SysEventListenerService implements EventListener {
+public class LogSysEventListenerService implements EventListener {
 
     private static boolean READ = true;
     private static final int TIMEOUT_READING_SECONDS = 60;
@@ -22,7 +22,7 @@ public class SysEventListenerService implements EventListener {
     private final DbReaderService dbReaderService;
 
     @Autowired
-    public SysEventListenerService(MailService mailService, DbReaderService dbReaderService) {
+    public LogSysEventListenerService(MailService mailService, DbReaderService dbReaderService) {
         this.dbReaderService = dbReaderService;
         this.mailService = mailService;
     }
