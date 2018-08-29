@@ -56,7 +56,6 @@ public class SysEventListenerService implements EventListener {
         }
     }
 
-
     public void stopListen() {
         READ = false;
     }
