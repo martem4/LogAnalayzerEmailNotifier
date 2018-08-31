@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LogSysEventListenerService implements EventListener {
@@ -49,22 +50,25 @@ public class LogSysEventListenerService implements EventListener {
     private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
         for (MailTemplate mailTemplate : mailTemplateList) {
             if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
-                    mailService.sendMail(mailTemplate.getRecipients(), logSysEvent.getMessage(), logSysEvent.getSysLogTag(),
+                ArrayList<LogSysEventMailTemplate> logSysEventMailTemplates = null;
+                try {
+                    logSysEventMailTemplates = dbReaderService.getLogSysEventTemplateMailList();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                mailService.sendMail(mailTemplate.getRecipients(), logSysEvent.getMessage(), logSysEvent.getSysLogTag(),
                             logSysEvent.getId());
             }
         }
     }
 
-    private boolean isLogSysEventTemplateExist(LogSysEvent logSysEvent) {
-        ArrayList<LogSysEventMailTemplate> logSysEventMailTemplates = null;
-        try {
-            logSysEventMailTemplates = dbReaderService.getLogSysEventTemplateMailList();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    private boolean isLogSysEventTemplateExist(ArrayList<LogSysEventMailTemplate> logSysEventMailTemplates,
+                                               LogSysEvent logSysEvent) {
         if (logSysEventMailTemplates != null) {
-
+            return logSysEventMailTemplates.stream().map(log -> log.getSysLogTag()).collect(Collectors.toList()).contains(logSysEvent.getSysLogTag());
         }
+        return false;
     }
 
     public void stopListen() {
