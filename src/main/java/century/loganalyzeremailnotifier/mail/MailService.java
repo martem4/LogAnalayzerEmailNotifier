@@ -10,6 +10,7 @@ import javax.mail.internet.MimeMessage;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -35,7 +36,7 @@ public class MailService {
         return mailProperties;
     }
 
-    public void sendMail(String recipientMail, String messgage, String programName, int id) {
+    public void sendMail(List<String> mailRecipients, String messgage, String programName, int id) {
         mailProperties = readEmailSettings();
         Session session = Session.getDefaultInstance(mailProperties,
                 new Authenticator() {
@@ -48,13 +49,15 @@ public class MailService {
                 });
 
         MimeMessage mimeMessage = new MimeMessage(session);
-        try {
-            mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(recipientMail));
-            mimeMessage.setSubject(programName);
-            mimeMessage.setText(LOGANALYZER_LOG_LINK_TEMPLATE + id + "\n" + messgage);
-            Transport.send(mimeMessage);
-        } catch (MessagingException e) {
-            e.printStackTrace();
+        for (String recipient : mailRecipients) {
+            try {
+                mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+                mimeMessage.setSubject(programName);
+                mimeMessage.setText(LOGANALYZER_LOG_LINK_TEMPLATE + id + "\n" + messgage);
+                Transport.send(mimeMessage);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
         }
     }
 

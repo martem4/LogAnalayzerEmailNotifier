@@ -1,8 +1,10 @@
 package century.loganalyzeremailnotifier.model;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString
 public class LogSysEventMailTemplate {
     private int interval;
     private int intervalBits;
@@ -17,4 +19,4 @@ public class LogSysEventMailTemplate {
         this.templateText = templateText;
         this.sysLogTag = sysLogTag;
     }
-}
+ }

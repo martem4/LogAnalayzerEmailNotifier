@@ -80,7 +80,7 @@ public class DbReaderService {
 
         try {
             statement = getConnectionToDb().createStatement();
-            String query = "select ID, Interval, IntervalBits, HitPercentage, TemplateText, SysLogTag" +
+            String query = "select ID, `Interval`, IntervalBits, HitPercentage, TemplateText, SysLogTag" +
                     " from syslog.systemevents_mail_template t;";
 
             rs = statement.executeQuery(query);

@@ -1,6 +1,7 @@
 package century.loganalyzeremailnotifier.listener;
 
 import century.loganalyzeremailnotifier.db.DbReaderService;
+import century.loganalyzeremailnotifier.model.LogSysEventMailTemplate;
 import lombok.NonNull;
 import century.loganalyzeremailnotifier.mail.MailService;
 import century.loganalyzeremailnotifier.model.LogSysEvent;
@@ -48,11 +49,21 @@ public class LogSysEventListenerService implements EventListener {
     private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
         for (MailTemplate mailTemplate : mailTemplateList) {
             if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
-                for (String recipient : mailTemplate.getRecipients()) {
-                    mailService.sendMail(recipient, logSysEvent.getMessage(), logSysEvent.getSysLogTag(),
+                    mailService.sendMail(mailTemplate.getRecipients(), logSysEvent.getMessage(), logSysEvent.getSysLogTag(),
                             logSysEvent.getId());
-                }
             }
+        }
+    }
+
+    private boolean isLogSysEventTemplateExist(LogSysEvent logSysEvent) {
+        ArrayList<LogSysEventMailTemplate> logSysEventMailTemplates = null;
+        try {
+            logSysEventMailTemplates = dbReaderService.getLogSysEventTemplateMailList();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (logSysEventMailTemplates != null) {
+
         }
     }
 
