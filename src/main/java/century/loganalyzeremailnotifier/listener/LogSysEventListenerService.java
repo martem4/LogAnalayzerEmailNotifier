@@ -56,7 +56,6 @@ public class LogSysEventListenerService implements EventListener {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-
                 mailService.sendMail(mailTemplate.getRecipients(), logSysEvent.getMessage(), logSysEvent.getSysLogTag(),
                             logSysEvent.getId());
             }
@@ -66,7 +65,8 @@ public class LogSysEventListenerService implements EventListener {
     private boolean isLogSysEventTemplateExist(ArrayList<LogSysEventMailTemplate> logSysEventMailTemplates,
                                                LogSysEvent logSysEvent) {
         if (logSysEventMailTemplates != null) {
-            return logSysEventMailTemplates.stream().map(log -> log.getSysLogTag()).collect(Collectors.toList()).contains(logSysEvent.getSysLogTag());
+            return logSysEventMailTemplates.stream().map(log ->
+                    log.getSysLogTag()).collect(Collectors.toList()).contains(logSysEvent.getSysLogTag());
         }
         return false;
     }
