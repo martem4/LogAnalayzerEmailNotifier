@@ -10,7 +10,6 @@ import javax.mail.internet.MimeMessage;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
