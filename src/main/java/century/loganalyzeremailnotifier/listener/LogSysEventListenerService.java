@@ -53,6 +53,11 @@ public class LogSysEventListenerService implements EventListener {
                 ArrayList<LogSysEventMailTemplate> logSysEventMailTemplates = null;
                 try {
                     logSysEventMailTemplates = dbReaderService.getLogSysEventTemplateMailList();
+                    if (isLogSysEventTemplateExist(logSysEventMailTemplates, logSysEvent)) {
+
+
+                        
+                    }
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
