@@ -102,7 +102,7 @@ public class DbReaderService {
         return logSysEventMailTemplateList;
     }
 
-    public ArrayList<LogSysEventGroup> getLogSysEventGroupList(int interval) throws SQLException {
+    public ArrayList<LogSysEventGroup> getLogSysEventGroupList(int interval, int countSegment) throws SQLException {
         ArrayList<LogSysEventGroup> logSysEventGroupList = new ArrayList<LogSysEventGroup>();
         Statement statement = null;
         ResultSet rs;

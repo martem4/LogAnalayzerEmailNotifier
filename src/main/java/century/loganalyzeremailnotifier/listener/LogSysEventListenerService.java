@@ -1,6 +1,7 @@
 package century.loganalyzeremailnotifier.listener;
 
 import century.loganalyzeremailnotifier.db.DbReaderService;
+import century.loganalyzeremailnotifier.model.LogSysEventGroup;
 import century.loganalyzeremailnotifier.model.LogSysEventMailTemplate;
 import lombok.NonNull;
 import century.loganalyzeremailnotifier.mail.MailService;
@@ -49,20 +50,31 @@ public class LogSysEventListenerService implements EventListener {
     }
     private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
         for (MailTemplate mailTemplate : mailTemplateList) {
+            //coincidence recepient mail template with LogSysEvent
             if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
                 ArrayList<LogSysEventMailTemplate> logSysEventMailTemplates = null;
                 try {
                     logSysEventMailTemplates = dbReaderService.getLogSysEventTemplateMailList();
+                    //check existing template in sysevent table
                     if (isLogSysEventTemplateExist(logSysEventMailTemplates, logSysEvent)) {
 
+                        //find by message template
+                        for(LogSysEventMailTemplate logSysEventMailTemplate : logSysEventMailTemplates) {
+                            if(logSysEvent.getMessage().contains(logSysEventMailTemplate.getTemplateText())) {
+                                //get data from db about frequency error
+                                ArrayList<LogSysEventGroup> logSysEventGroups = null;
+                                logSysEventGroups = dbReaderService.getLogSysEventGroupList(logSysEventMailTemplate.getInterval());
 
-                        
+                            }
+                        }
+                    }
+                    else {
+                        mailService.sendMail(mailTemplate.getRecipients(), logSysEvent.getMessage(), logSysEvent.getSysLogTag(),
+                                logSysEvent.getId());
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                mailService.sendMail(mailTemplate.getRecipients(), logSysEvent.getMessage(), logSysEvent.getSysLogTag(),
-                            logSysEvent.getId());
             }
         }
     }
