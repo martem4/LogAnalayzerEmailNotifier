@@ -65,7 +65,10 @@ public class LogSysEventListenerService implements EventListener {
                                 logSysEventMailTemplates) {
                             if(logSysEvent.getMessage().contains(logSysEventMailTemplate.
                                     getTemplateText())) {
-                                
+                                if (logSysEventMailTemplate.getHitPercentage() <= getLogSysEventHittingPercentage(logSysEventMailTemplate, logSysEvent)) {
+                                    mailService.sendMail(mailTemplate.getRecipients(), logSysEvent.getMessage(), logSysEvent.getSysLogTag(),
+                                            logSysEvent.getId());
+                                }
                             }
                         }
                     }
