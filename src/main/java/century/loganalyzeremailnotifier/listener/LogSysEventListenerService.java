@@ -88,6 +88,24 @@ public class LogSysEventListenerService implements EventListener {
         return false;
     }
 
+    private byte getLogSysEventHittingPercentage(@NonNull LogSysEventMailTemplate logSysEventMailTemplate,
+                                                 @NonNull LogSysEvent logSysEvent) {
+        int step = logSysEventMailTemplate.getInterval() / logSysEventMailTemplate.getIntervalBits();
+        int startInterval = logSysEventMailTemplate.getInterval();
+        int endInterval = logSysEventMailTemplate.getInterval() - step;
+
+        while (endInterval >= 0) {
+            try {
+                ArrayList<LogSysEventGroup> logSysEventGroups =
+                        dbReaderService.getLogSysEventGroupList(startInterval, endInterval);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            startInterval = endInterval;
+            endInterval = startInterval - step;
+        }
+    }
+
     public void stopListen() {
         READ = false;
     }

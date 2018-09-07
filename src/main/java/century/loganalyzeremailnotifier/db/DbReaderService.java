@@ -102,7 +102,7 @@ public class DbReaderService {
         return logSysEventMailTemplateList;
     }
 
-    public ArrayList<LogSysEventGroup> getLogSysEventGroupList(int interval, int countSegment) throws SQLException {
+    public ArrayList<LogSysEventGroup> getLogSysEventGroupList(int startInterval, int stopInterval) throws SQLException {
         ArrayList<LogSysEventGroup> logSysEventGroupList = new ArrayList<LogSysEventGroup>();
         Statement statement = null;
         ResultSet rs;
@@ -116,8 +116,8 @@ public class DbReaderService {
                     "from\n" +
                     "  syslog.systemevents t\n" +
                     "where\n" +
-                    "  t.ReceivedAt >= date_sub( now(),interval "+interval+" second )\n" +
-                    "  and t.ReceivedAt < now()\n" +
+                    "  t.ReceivedAt >= date_sub( now(),interval "+startInterval+" second )\n" +
+                    "  and t.ReceivedAt < date_sub( now(),interval "+stopInterval+" second )\n" +
                     "group by Message, SysLogTag\n" +
                     "order by  Count desc";
 
