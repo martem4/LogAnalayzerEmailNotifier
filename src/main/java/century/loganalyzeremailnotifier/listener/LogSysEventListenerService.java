@@ -65,10 +65,7 @@ public class LogSysEventListenerService implements EventListener {
                                 logSysEventMailTemplates) {
                             if(logSysEvent.getMessage().contains(logSysEventMailTemplate.
                                     getTemplateText())) {
-
-                                //get data from db about frequency error
-                                //ArrayList<LogSysEventGroup> logSysEventGroups = null;
-                                //logSysEventGroups = dbReaderService.getLogSysEventGroupList(logSysEventMailTemplate.getInterval());
+                                
                             }
                         }
                     }
@@ -111,10 +108,15 @@ public class LogSysEventListenerService implements EventListener {
             endInterval = startInterval - step;
             if (logSysEventGroups != null) {
                 for (LogSysEventGroup logSysEventGroup : logSysEventGroups) {
-
+                    if (logSysEventGroup.getMessage().contains(logSysEvent.getMessage())) {
+                        if(logSysEventGroup.getCount() > 0) {
+                            hitCount +=1;
+                        }
+                    }
                 }
             }
         }
+        return (byte) ((hitCount/logSysEventMailTemplate.getIntervalBits())*100);
     }
 
     public void stopListen() {
