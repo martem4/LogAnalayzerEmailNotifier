@@ -48,23 +48,27 @@ public class LogSysEventListenerService implements EventListener {
             }
         }
     }
-    private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateList, LogSysEvent logSysEvent) {
+    private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateList,
+                                    LogSysEvent logSysEvent) {
         for (MailTemplate mailTemplate : mailTemplateList) {
             //coincidence recepient mail template with LogSysEvent
-            if (mailTemplate.getLogName().toLowerCase().contains(logSysEvent.getSysLogTag().toLowerCase())) {
-                ArrayList<LogSysEventMailTemplate> logSysEventMailTemplates = null;
+            if (mailTemplate.getLogName().toLowerCase().
+                    contains(logSysEvent.getSysLogTag().toLowerCase())) {
+                ArrayList<LogSysEventMailTemplate> logSysEventMailTemplates;
                 try {
-                    logSysEventMailTemplates = dbReaderService.getLogSysEventTemplateMailList();
-                    //check existing template in sysevent table
-                    if (isLogSysEventTemplateExist(logSysEventMailTemplates, logSysEvent)) {
+                    logSysEventMailTemplates = dbReaderService.
+                            getLogSysEventTemplateMailList();
 
-                        //find by message template
-                        for(LogSysEventMailTemplate logSysEventMailTemplate : logSysEventMailTemplates) {
-                            if(logSysEvent.getMessage().contains(logSysEventMailTemplate.getTemplateText())) {
+                    if (isLogSysEventTemplateExist(logSysEventMailTemplates,
+                            logSysEvent)) {
+                        for(LogSysEventMailTemplate logSysEventMailTemplate :
+                                logSysEventMailTemplates) {
+                            if(logSysEvent.getMessage().contains(logSysEventMailTemplate.
+                                    getTemplateText())) {
+
                                 //get data from db about frequency error
-                                ArrayList<LogSysEventGroup> logSysEventGroups = null;
-                                logSysEventGroups = dbReaderService.getLogSysEventGroupList(logSysEventMailTemplate.getInterval());
-
+                                //ArrayList<LogSysEventGroup> logSysEventGroups = null;
+                                //logSysEventGroups = dbReaderService.getLogSysEventGroupList(logSysEventMailTemplate.getInterval());
                             }
                         }
                     }
@@ -94,15 +98,22 @@ public class LogSysEventListenerService implements EventListener {
         int startInterval = logSysEventMailTemplate.getInterval();
         int endInterval = logSysEventMailTemplate.getInterval() - step;
 
+        int hitCount = 0;
         while (endInterval >= 0) {
+            ArrayList<LogSysEventGroup> logSysEventGroups = null;
             try {
-                ArrayList<LogSysEventGroup> logSysEventGroups =
-                        dbReaderService.getLogSysEventGroupList(startInterval, endInterval);
+                logSysEventGroups = dbReaderService.
+                        getLogSysEventGroupList(startInterval, endInterval);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
             startInterval = endInterval;
             endInterval = startInterval - step;
+            if (logSysEventGroups != null) {
+                for (LogSysEventGroup logSysEventGroup : logSysEventGroups) {
+
+                }
+            }
         }
     }
 
