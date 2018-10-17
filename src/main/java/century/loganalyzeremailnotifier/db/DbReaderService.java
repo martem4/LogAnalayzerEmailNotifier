@@ -1,7 +1,7 @@
 package century.loganalyzeremailnotifier.db;
 
 import century.loganalyzeremailnotifier.model.LogSysEventGroup;
-import century.loganalyzeremailnotifier.model.LogSysEventMailTemplate;
+import century.loganalyzeremailnotifier.model.LogSysEventMailDbTemplate;
 import lombok.Cleanup;
 import century.loganalyzeremailnotifier.model.LogSysEvent;
 import org.springframework.stereotype.Service;
@@ -73,8 +73,8 @@ public class DbReaderService {
         return logSysEventList;
     }
 
-    public ArrayList<LogSysEventMailTemplate> getLogSysEventTemplateMailList() throws SQLException {
-            ArrayList<LogSysEventMailTemplate> logSysEventMailTemplateList = new ArrayList<LogSysEventMailTemplate>();
+    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailDbTemplateList() throws SQLException {
+            ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplateList = new ArrayList<>();
             Statement statement = null;
             ResultSet rs;
 
@@ -85,7 +85,7 @@ public class DbReaderService {
 
             rs = statement.executeQuery(query);
             while (rs.next()) {
-                logSysEventMailTemplateList.add(new LogSysEventMailTemplate(
+                logSysEventMailDbTemplateList.add(new LogSysEventMailDbTemplate(
                         rs.getInt("ID"),
                         rs.getInt("Interval"),
                         rs.getInt("IntervalBits"),
@@ -99,7 +99,7 @@ public class DbReaderService {
         finally {
             statement.getConnection().close();
         }
-        return logSysEventMailTemplateList;
+        return logSysEventMailDbTemplateList;
     }
 
     public ArrayList<LogSysEventGroup> getLogSysEventGroupList(int startInterval,
