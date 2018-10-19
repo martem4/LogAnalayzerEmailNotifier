@@ -55,22 +55,21 @@ public class LogSysEventListenerService implements EventListener {
 
     private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateXmlList,
                                     @NonNull LogSysEvent logSysEvent) {
+
         for (MailTemplate mailTemplateXml : mailTemplateXmlList) {
             //1 check enable mail templates in xml
             if (isLogSysEventContainMailTemplateXml(logSysEvent, mailTemplateXml)) {
-
                 ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplates;
                 try {
                     //2 check enable xml template in db templates
                     logSysEventMailDbTemplates = dbReaderService.getLogSysEventMailDbTemplateList();
                     if (isLogSysEventContainMailDbTemplate(logSysEventMailDbTemplates, logSysEvent)) {
-
                         //3send mail by db template with hitting by percentage
                         sendMailByTemplateWithHittingPercentage(logSysEventMailDbTemplates,
-                                logSysEvent,
-                                mailTemplateXml);
+                                logSysEvent, mailTemplateXml.getRecipients());
                     } else {
-                        mailService.sendMail(mailTemplateXml.getRecipients(), logSysEvent.getMessage(),
+                        mailService.sendMail(mailTemplateXml.getRecipients(),
+                                logSysEvent.getMessage(),
                                 logSysEvent.getSysLogTag(),
                                 logSysEvent.getId());
                     }
@@ -81,21 +80,25 @@ public class LogSysEventListenerService implements EventListener {
         }
     }
 
-
     private void sendMailByTemplateWithHittingPercentage(List<LogSysEventMailDbTemplate> logSysEventMailDbTemplates,
-                                                         LogSysEvent logSysEvent, MailTemplate mailTemplateXml) {
+                                                         LogSysEvent logSysEvent,
+                                                         List<String> recipients) {
+
         for (LogSysEventMailDbTemplate logSysEventMailDbTemplate : logSysEventMailDbTemplates) {
             if (logSysEvent.getMessage().contains(logSysEventMailDbTemplate.getTemplateText())) {
                 if (logSysEventMailDbTemplate.getHitPercentage() <=
                         getLogSysEventHittingPercentage(logSysEventMailDbTemplate, logSysEvent)) {
-                    mailService.sendMail(mailTemplateXml.getRecipients(),
+                    mailService.sendMail(recipients,
                             logSysEvent.getMessage(),
                             logSysEvent.getSysLogTag(),
                             logSysEvent.getId());
                 }
             }
         }
+
     }
+
+    private boolean isOverLimitHitting
 
     private boolean isLogSysEventContainMailTemplateXml(@NonNull LogSysEvent logSysEvent,
                                                         @NonNull MailTemplate mailTemplateXml) {
@@ -103,7 +106,7 @@ public class LogSysEventListenerService implements EventListener {
                 .contains(logSysEvent.getSysLogTag().toLowerCase());
     }
 
-    private boolean isLogSysEventContainMailDbTemplate(ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplates,
+    private boolean isLogSysEventContainMailDbTemplate(List<LogSysEventMailDbTemplate> logSysEventMailDbTemplates,
                                                        LogSysEvent logSysEvent) {
         if (logSysEventMailDbTemplates != null) {
             return logSysEventMailDbTemplates.stream().map(log ->
