@@ -81,11 +81,10 @@ public class LogSysEventListenerService implements EventListener {
     private void sendMailByTemplateWithHittingPercentage(List<LogSysEventMailDbTemplate> logSysEventMailDbTemplates,
                                                          LogSysEvent logSysEvent,
                                                          List<String> recipients) {
-
         for (LogSysEventMailDbTemplate logSysEventMailDbTemplate : logSysEventMailDbTemplates) {
             if (logSysEvent.getMessage().contains(logSysEventMailDbTemplate.getTemplateText())) {
-                if (logSysEventMailDbTemplate.getHitPercentage() <=
-                        getLogSysEventHittingPercentage(logSysEventMailDbTemplate, logSysEvent)) {
+                if (getLogSysEventHittingPercentage(logSysEventMailDbTemplate, logSysEvent) >=
+                        logSysEventMailDbTemplate.getHitPercentage()) {
                     mailService.sendMail(recipients,
                             logSysEvent.getMessage(),
                             logSysEvent.getSysLogTag(),
@@ -93,9 +92,7 @@ public class LogSysEventListenerService implements EventListener {
                 }
             }
         }
-
     }
-
     //private boolean isOverLimitHitting
 
     private boolean isLogSysEventContainMailTemplateXml(@NonNull LogSysEvent logSysEvent,
