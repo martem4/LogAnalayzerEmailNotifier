@@ -1,7 +1,7 @@
 package century.loganalyzermailnotifier;
 
 import century.loganalyzeremailnotifier.db.DbReaderService;
-import century.loganalyzeremailnotifier.model.LogSysEventMailTemplate;
+import century.loganalyzeremailnotifier.model.LogSysEventMailDbTemplate;
 import org.junit.Ignore;
 import org.junit.Test;
 import java.sql.SQLException;
@@ -19,10 +19,10 @@ public class TestDbReaderService {
     @Test
     public void testGetLogSysEventMailTemplateList() throws SQLException {
         DbReaderService dbReaderService = new DbReaderService();
-                    ArrayList<LogSysEventMailTemplate> logSysEventMailTemplates =
-                    dbReaderService.getLogSysEventTemplateMailList();
+                    ArrayList<LogSysEventMailDbTemplate> logSysEventMailTemplates =
+                    dbReaderService.getLogSysEventMailDbTemplateList();
 
-                    for (LogSysEventMailTemplate template : logSysEventMailTemplates) {
+                    for (LogSysEventMailDbTemplate template : logSysEventMailTemplates) {
                         System.out.println(template);
                     }
                     assert logSysEventMailTemplates.size() == 1;
