@@ -38,10 +38,8 @@ public class LogSysEventListenerService implements EventListener {
                 ArrayList<LogSysEvent> sysEventList = dbReaderService.
                         getLogSysEventList(TIMEOUT_READING_SECONDS);
                 if (sysEventList != null) {
-                    if (sysEventList.size() != 0) {
-                        for (LogSysEvent logSysEvent : sysEventList) {
+                    for (LogSysEvent logSysEvent : sysEventList) {
                             sendMailByTemplate(mailTemplatesXml, logSysEvent);
-                        }
                     }
                 }
                 Thread.sleep(TIMEOUT_READING_SECONDS * 1000);
@@ -98,7 +96,7 @@ public class LogSysEventListenerService implements EventListener {
 
     }
 
-    private boolean isOverLimitHitting
+    //private boolean isOverLimitHitting
 
     private boolean isLogSysEventContainMailTemplateXml(@NonNull LogSysEvent logSysEvent,
                                                         @NonNull MailTemplate mailTemplateXml) {
