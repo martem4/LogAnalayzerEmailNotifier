@@ -19,4 +19,8 @@ public class LogSysEventMailDbTemplate {
         this.templateText = templateText;
         this.sysLogTag = sysLogTag;
     }
+    public LogSysEventMailDbTemplate(String templateText, String sysLogTag) {
+        this.templateText = templateText;
+        this.sysLogTag = sysLogTag;
+    }
  }

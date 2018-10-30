@@ -60,7 +60,7 @@ public class MailService {
         }
     }
 
-    public List<MailTemplate> readMailTemplateXml() {
+    public List<MailTemplate> getMailTemplateXml() {
         List<MailTemplate> mailTemplateList = null;
         try {
             File mailTemplateXml = new File(MAIL_TEMPLATE_RECIPIENTS);

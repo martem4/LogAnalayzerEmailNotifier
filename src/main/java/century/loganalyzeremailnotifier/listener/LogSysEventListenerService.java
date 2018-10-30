@@ -32,16 +32,18 @@ public class LogSysEventListenerService implements EventListener {
     }
 
     public void listenNewEvent() {
-        List<MailTemplate> mailTemplatesXml = mailService.readMailTemplateXml();
+
         while (READ) {
             try {
                 ArrayList<LogSysEvent> sysEventList = dbReaderService.
                         getLogSysEventList(TIMEOUT_READING_SECONDS);
+
                 if (sysEventList != null) {
                     for (LogSysEvent logSysEvent : sysEventList) {
-                            sendMailByTemplate(mailTemplatesXml, logSysEvent);
+                            sendMailByTemplate(mailService.getMailTemplateXml(), logSysEvent);
                     }
                 }
+
                 Thread.sleep(TIMEOUT_READING_SECONDS * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -51,28 +53,30 @@ public class LogSysEventListenerService implements EventListener {
         }
     }
 
-    private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateXmlList,
-                                    @NonNull LogSysEvent logSysEvent) {
+    private MailTemplate getMailTemplateXml(LogSysEvent logSysEvent) {
+        List<MailTemplate> mailTemplatesXml = mailService.getMailTemplateXml();
+        if (mailTemplatesXml != null) {
+            return mailTemplatesXml.stream().filter(mailTemplate ->
+                    logSysEvent.getSysLogTag().equals(mailTemplate.getLogName()))
+                    .findAny().orElse(null);
+        }
+        return null;
+    }
 
+    private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateXmlList,
+                                    @NonNull LogSysEvent logSysEvent) throws SQLException {
+
+        ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplates = dbReaderService.getLogSysEventMailDbTemplateList();
         for (MailTemplate mailTemplateXml : mailTemplateXmlList) {
-            //1 check enable mail templates in xml
             if (isLogSysEventContainMailTemplateXml(logSysEvent, mailTemplateXml)) {
-                ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplates;
-                try {
-                    //2 check enable xml template in db templates
-                    logSysEventMailDbTemplates = dbReaderService.getLogSysEventMailDbTemplateList();
-                    if (isLogSysEventContainMailDbTemplate(logSysEventMailDbTemplates, logSysEvent)) {
-                        //3send mail by db template with hitting by percentage
-                        sendMailByTemplateWithHittingPercentage(logSysEventMailDbTemplates,
-                                logSysEvent, mailTemplateXml.getRecipients());
-                    } else {
+                if (isLogSysEventContainMailDbTemplate(logSysEventMailDbTemplates, logSysEvent)) {
+                    sendMailByTemplateWithHittingPercentage(logSysEventMailDbTemplates,
+                            logSysEvent, mailTemplateXml.getRecipients());
+                } else {
                         mailService.sendMail(mailTemplateXml.getRecipients(),
                                 logSysEvent.getMessage(),
                                 logSysEvent.getSysLogTag(),
                                 logSysEvent.getId());
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
                 }
             }
         }
@@ -97,6 +101,7 @@ public class LogSysEventListenerService implements EventListener {
 
     private boolean isLogSysEventContainMailTemplateXml(@NonNull LogSysEvent logSysEvent,
                                                         @NonNull MailTemplate mailTemplateXml) {
+
         return mailTemplateXml.getLogName().toLowerCase()
                 .contains(logSysEvent.getSysLogTag().toLowerCase());
     }

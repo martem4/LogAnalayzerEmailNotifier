@@ -102,6 +102,31 @@ public class DbReaderService {
         return logSysEventMailDbTemplateList;
     }
 
+    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailExcludeDbTemplateList() throws SQLException {
+        ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplateList = new ArrayList<>();
+        Statement statement = null;
+        ResultSet rs;
+
+        try {
+            statement = getConnectionToDb().createStatement();
+            String query = "select TemplateText, SysLogTag" +
+                    " from syslog.systemevents_exclude_mail_template t;";
+
+            rs = statement.executeQuery(query);
+            while (rs.next()) {
+                logSysEventMailDbTemplateList.add(new LogSysEventMailDbTemplate(
+                        rs.getString("TemplateText"),
+                        rs.getString("SysLogTag")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            statement.getConnection().close();
+        }
+        return logSysEventMailDbTemplateList;
+    }
+
     public ArrayList<LogSysEventGroup> getLogSysEventGroupList(int startInterval,
                                                                int stopInterval) throws SQLException {
         ArrayList<LogSysEventGroup> logSysEventGroupList = new ArrayList<LogSysEventGroup>();
@@ -111,7 +136,7 @@ public class DbReaderService {
         try {
             statement = getConnectionToDb().createStatement();
             String query = "select\n" +
-                    "  substring(Message, position('ERROR' in Message)) as Message ,\n" +
+                    "  substring(Message, position('ERROR' in Message)) as msg ,\n" +
                     "  SysLogTag,\n" +
                     "  count(*) as Count\n" +
                     "from\n" +
@@ -119,7 +144,7 @@ public class DbReaderService {
                     "where\n" +
                     "  t.ReceivedAt >= date_sub( now(),interval "+startInterval+" second )\n" +
                     "  and t.ReceivedAt < date_sub( now(),interval "+stopInterval+" second )\n" +
-                    "group by Message, SysLogTag\n" +
+                    "group by msg, SysLogTag\n" +
                     "order by  Count desc";
 
             rs = statement.executeQuery(query);
