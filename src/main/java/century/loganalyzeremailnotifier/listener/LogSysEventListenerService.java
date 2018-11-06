@@ -66,19 +66,27 @@ public class LogSysEventListenerService implements EventListener {
     private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateXmlList,
                                     @NonNull LogSysEvent logSysEvent) throws SQLException {
 
-        ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplates = dbReaderService.getLogSysEventMailDbTemplateList();
+        ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplates =
+                dbReaderService.getLogSysEventMailDbTemplateList();
+
+        ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbExcludeTemplates =
+                dbReaderService.getLogSysEventMailExcludeDbTemplateList();
+
         for (MailTemplate mailTemplateXml : mailTemplateXmlList) {
             if (isLogSysEventContainMailTemplateXml(logSysEvent, mailTemplateXml)) {
-                if (isLogSysEventContainMailDbTemplate(logSysEventMailDbTemplates, logSysEvent)) {
-                    sendMailByTemplateWithHittingPercentage(logSysEventMailDbTemplates,
-                            logSysEvent, mailTemplateXml.getRecipients());
-                } else {
+                if (isLogSysEventContainMailDbExcludeTemplate(logSysEventMailDbExcludeTemplates, logSysEvent)) {
+                    if (isLogSysEventContainMailDbTemplate(logSysEventMailDbTemplates, logSysEvent)) {
+                        sendMailByTemplateWithHittingPercentage(logSysEventMailDbTemplates,
+                                logSysEvent, mailTemplateXml.getRecipients());
+                    } else {
                         mailService.sendMail(mailTemplateXml.getRecipients(),
                                 logSysEvent.getMessage(),
                                 logSysEvent.getSysLogTag(),
                                 logSysEvent.getId());
+                    }
                 }
             }
+
         }
     }
 
@@ -111,6 +119,15 @@ public class LogSysEventListenerService implements EventListener {
         if (logSysEventMailDbTemplates != null) {
             return logSysEventMailDbTemplates.stream().map(log ->
                     log.getSysLogTag()).collect(Collectors.toList()).contains(logSysEvent.getSysLogTag());
+        }
+        return false;
+    }
+
+    private boolean isLogSysEventContainMailDbExcludeTemplate(List<LogSysEventMailDbTemplate> logSysEventMailDbExludeTemplates,
+                                                       LogSysEvent logSysEvent) {
+        if (logSysEventMailDbExludeTemplates != null) {
+            return logSysEventMailDbExludeTemplates.stream().map(log ->
+                    log.getTemplateText()).collect(Collectors.toList()).contains(logSysEvent.getMessage());
         }
         return false;
     }

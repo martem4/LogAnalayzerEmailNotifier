@@ -48,7 +48,7 @@ public class DbReaderService {
         ResultSet rs;
         try {
             statement = getConnectionToDb().createStatement();
-            String query = "select ID ,ReceivedAt ,DeviceReportedTime ,Facility ,Priority ,FromHost ,Message" +
+            String query = "select ID ,ReceivedAt ,DeviceReportedTime ,Facility ,Priority ,FromHost , substring(Message, position('ERROR' in Message)) as Message " +
                     " ,SysLogTag" +
                     " from syslog.systemevents t" +
                     " where t.ReceivedAt >= date_sub(now(), interval " + timeOutReading + " second )\n" +
