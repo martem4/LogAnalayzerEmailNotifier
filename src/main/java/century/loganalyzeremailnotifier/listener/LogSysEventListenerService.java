@@ -74,7 +74,7 @@ public class LogSysEventListenerService implements EventListener {
 
         for (MailTemplate mailTemplateXml : mailTemplateXmlList) {
             if (isLogSysEventContainMailTemplateXml(logSysEvent, mailTemplateXml)) {
-                if (isLogSysEventContainMailDbExcludeTemplate(logSysEventMailDbExcludeTemplates, logSysEvent)) {
+                if (!isLogSysEventContainMailDbExcludeTemplate(logSysEventMailDbExcludeTemplates, logSysEvent)) {
                     if (isLogSysEventContainMailDbTemplate(logSysEventMailDbTemplates, logSysEvent)) {
                         sendMailByTemplateWithHittingPercentage(logSysEventMailDbTemplates,
                                 logSysEvent, mailTemplateXml.getRecipients());
