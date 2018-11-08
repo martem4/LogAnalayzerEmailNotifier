@@ -142,8 +142,8 @@ public class DbReaderService {
                     "from\n" +
                     "  syslog.systemevents t\n" +
                     "where\n" +
-                    "  t.ReceivedAt >= date_sub( now(),interval "+startInterval+" second )\n" +
-                    "  and t.ReceivedAt < date_sub( now(),interval "+stopInterval+" second )\n" +
+                    "  t.ReceivedAt >= date_sub(now(), interval "+startInterval+" second)\n" +
+                    "  and t.ReceivedAt < date_sub(now(), interval "+stopInterval+" second)\n" +
                     "group by msg, SysLogTag\n" +
                     "order by  Count desc";
 
