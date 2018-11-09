@@ -40,7 +40,7 @@ public class LogSysEventListenerService implements EventListener {
 
                 if (sysEventList != null) {
                     for (LogSysEvent logSysEvent : sysEventList) {
-                            sendMailByTemplate(mailService.getMailTemplateXml(), logSysEvent);
+                        sendMailByTemplate(mailService.getMailTemplateXml(), logSysEvent);
                     }
                 }
 
@@ -96,8 +96,7 @@ public class LogSysEventListenerService implements EventListener {
                                                          List<String> recipients) throws SQLException {
         for (LogSysEventMailDbTemplate logSysEventMailDbTemplate : logSysEventMailDbTemplates) {
             if (logSysEvent.getMessage().contains(logSysEventMailDbTemplate.getTemplateText())) {
-                if (getLogSysEventHittingPercentage(logSysEventMailDbTemplate, logSysEvent) >=
-                        logSysEventMailDbTemplate.getHitPercentage()) {
+                if (isOverLimitHitting(logSysEvent, logSysEventMailDbTemplate)){
                     mailService.sendMail(recipients,
                             logSysEvent.getMessage(),
                             logSysEvent.getSysLogTag(),
@@ -105,6 +104,13 @@ public class LogSysEventListenerService implements EventListener {
                 }
             }
         }
+    }
+
+    private boolean isOverLimitHitting(LogSysEvent logSysEvent, LogSysEventMailDbTemplate logSysEventMailDbTemplate) throws SQLException {
+        int logSysEventHitPercentage = getLogSysEventHittingPercentage(logSysEventMailDbTemplate, logSysEvent);
+        int logSysEventHitPercentageLimit = logSysEventMailDbTemplate.getHitPercentage();
+
+        return (logSysEventHitPercentage >= logSysEventHitPercentageLimit) ? true : false;
     }
     //private boolean isOverLimitHitting
 
@@ -125,7 +131,7 @@ public class LogSysEventListenerService implements EventListener {
     }
 
     private boolean isLogSysEventContainMailDbExcludeTemplate(List<LogSysEventMailDbTemplate> logSysEventMailDbExludeTemplates,
-                                                       LogSysEvent logSysEvent) {
+                                                              LogSysEvent logSysEvent) {
         if (logSysEventMailDbExludeTemplates != null) {
             return logSysEventMailDbExludeTemplates.stream().map(log ->
                     log.getTemplateText()).collect(Collectors.toList()).contains(logSysEvent.getMessage());
