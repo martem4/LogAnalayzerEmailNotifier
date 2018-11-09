@@ -94,9 +94,10 @@ public class LogSysEventListenerService implements EventListener {
     private void sendMailByTemplateWithHittingPercentage(List<LogSysEventMailDbTemplate> logSysEventMailDbTemplates,
                                                          LogSysEvent logSysEvent,
                                                          List<String> recipients) throws SQLException {
+
         for (LogSysEventMailDbTemplate logSysEventMailDbTemplate : logSysEventMailDbTemplates) {
             if (logSysEvent.getMessage().contains(logSysEventMailDbTemplate.getTemplateText())) {
-                if (isOverLimitHitting(logSysEvent, logSysEventMailDbTemplate)){
+                if (isOverLimitHitting(logSysEvent, logSysEventMailDbTemplate)) {
                     mailService.sendMail(recipients,
                             logSysEvent.getMessage(),
                             logSysEvent.getSysLogTag(),
@@ -106,7 +107,8 @@ public class LogSysEventListenerService implements EventListener {
         }
     }
 
-    private boolean isOverLimitHitting(LogSysEvent logSysEvent, LogSysEventMailDbTemplate logSysEventMailDbTemplate) throws SQLException {
+    private boolean isOverLimitHitting(LogSysEvent logSysEvent, LogSysEventMailDbTemplate logSysEventMailDbTemplate)
+            throws SQLException {
         int logSysEventHitPercentage = getLogSysEventHittingPercentage(logSysEventMailDbTemplate, logSysEvent);
         int logSysEventHitPercentageLimit = logSysEventMailDbTemplate.getHitPercentage();
 
@@ -139,13 +141,13 @@ public class LogSysEventListenerService implements EventListener {
         return false;
     }
 
-    private byte getLogSysEventHittingPercentage(@NonNull LogSysEventMailDbTemplate logSysEventMailDbTemplate,
+    private int getLogSysEventHittingPercentage(@NonNull LogSysEventMailDbTemplate logSysEventMailDbTemplate,
                                                  @NonNull LogSysEvent logSysEvent) throws SQLException {
         int step = logSysEventMailDbTemplate.getInterval() / logSysEventMailDbTemplate.getIntervalBits();
         int startInterval = logSysEventMailDbTemplate.getInterval();
         int endInterval = logSysEventMailDbTemplate.getInterval() - step;
-
         int hitCount = 0;
+
         while (endInterval >= 0) {
             ArrayList<LogSysEventGroup> logSysEventGroups;
             logSysEventGroups = dbReaderService.getLogSysEventGroupList(startInterval, endInterval);
@@ -161,7 +163,10 @@ public class LogSysEventListenerService implements EventListener {
                 }
             }
         }
-        return (byte) ((hitCount / logSysEventMailDbTemplate.getIntervalBits()) * 100);
+        int hittingPercentage = ((hitCount / logSysEventMailDbTemplate.getIntervalBits()) * 100);
+        System.out.println("Hit count for " + logSysEventMailDbTemplate.getSysLogTag() + " = " );
+
+        return  hittingPercentage;
     }
 
     public void stopListen() {
