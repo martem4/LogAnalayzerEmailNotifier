@@ -11,6 +11,7 @@
     <properties>
         <spring.version>5.0.8.RELEASE</spring.version>
         <lombock.version>1.18.2</lombock.version>
+        <slf4jVersion>1.6.1</slf4jVersion>
     </properties>
 
     <build>
@@ -88,6 +89,11 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4jVersion}</version>
         </dependency>
     </dependencies>
 </project>

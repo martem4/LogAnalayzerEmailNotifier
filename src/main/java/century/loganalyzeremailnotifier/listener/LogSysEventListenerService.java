@@ -7,6 +7,7 @@ import lombok.NonNull;
 import century.loganalyzeremailnotifier.mail.MailService;
 import century.loganalyzeremailnotifier.model.LogSysEvent;
 import century.loganalyzeremailnotifier.model.MailTemplate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class LogSysEventListenerService implements EventListener {
 
@@ -32,19 +34,21 @@ public class LogSysEventListenerService implements EventListener {
     }
 
     public void listenNewEvent() {
-
         while (READ) {
             try {
+                //get incoming events from  mysql db
                 ArrayList<LogSysEvent> sysEventList = dbReaderService.
                         getLogSysEventList(TIMEOUT_READING_SECONDS);
 
                 if (sysEventList != null) {
+                    //sending message but before filter by templates
+                    //get templates from xml file (what to send)
+                    List<MailTemplate> xmlMailTemplates = mailService.getMailTemplateXml();
                     for (LogSysEvent logSysEvent : sysEventList) {
-                        sendMailByTemplate(mailService.getMailTemplateXml(), logSysEvent);
+                        sendMailByTemplate(xmlMailTemplates, logSysEvent);
                     }
                 }
-
-                Thread.sleep(TIMEOUT_READING_SECONDS * 1000);
+                Thread.sleep(1000 * TIMEOUT_READING_SECONDS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (SQLException e) {
@@ -66,22 +70,26 @@ public class LogSysEventListenerService implements EventListener {
     private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateXmlList,
                                     @NonNull LogSysEvent logSysEvent) throws SQLException {
 
+        //get  templates with delays for sending
         ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplates =
                 dbReaderService.getLogSysEventMailDbTemplateList();
 
+        //get templates for excluding to send
         ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbExcludeTemplates =
                 dbReaderService.getLogSysEventMailExcludeDbTemplateList();
 
+        //consider all templates
         for (MailTemplate mailTemplateXml : mailTemplateXmlList) {
             if (isLogSysEventContainMailTemplateXml(logSysEvent, mailTemplateXml)) {
                 if (isLogSysEventContainMailDbExcludeTemplate(logSysEventMailDbExcludeTemplates, logSysEvent)) {
                     continue;
                 }
+                //if event is hitting with special templates
                 if (isLogSysEventContainMailDbTemplate(logSysEventMailDbTemplates, logSysEvent)) {
                     sendMailByTemplateWithHittingPercentage(logSysEventMailDbTemplates,
                             logSysEvent, mailTemplateXml.getRecipients());
                 } else {
-                    System.out.println("Sending message without calculation percentage for " +  logSysEvent.getSysLogTag());
+                    log.info("Sending message without calculation percentage for " +  logSysEvent.getSysLogTag());
                     mailService.sendMail(mailTemplateXml.getRecipients(),
                             logSysEvent.getMessage(),
                             logSysEvent.getSysLogTag(),
@@ -99,11 +107,14 @@ public class LogSysEventListenerService implements EventListener {
         for (LogSysEventMailDbTemplate logSysEventMailDbTemplate : logSysEventMailDbTemplates) {
             if (logSysEvent.getMessage().contains(logSysEventMailDbTemplate.getTemplateText())) {
                 if (isOverLimitHitting(logSysEvent, logSysEventMailDbTemplate)) {
-                    System.out.println("Sending message with calculation percentage for " +  logSysEvent.getSysLogTag());
+                    log.info("Sending message with calculation percentage for " +  logSysEvent.getSysLogTag());
                     mailService.sendMail(recipients,
                             logSysEvent.getMessage(),
                             logSysEvent.getSysLogTag(),
                             logSysEvent.getId());
+                }
+                else {
+                    log.info("The message was not sended because percentage is lower then needed!");
                 }
             }
         }
@@ -166,7 +177,8 @@ public class LogSysEventListenerService implements EventListener {
             }
         }
         int hittingPercentage = ((hitCount / logSysEventMailDbTemplate.getIntervalBits()) * 100);
-        System.out.println("Hit count for " + logSysEventMailDbTemplate.getSysLogTag() + " = " );
+        log.info("Hit count for " + logSysEventMailDbTemplate.getSysLogTag() + " = " );
+        log.info("Hit count for " + logSysEventMailDbTemplate.getSysLogTag() + " = " );
 
         return  hittingPercentage;
     }
