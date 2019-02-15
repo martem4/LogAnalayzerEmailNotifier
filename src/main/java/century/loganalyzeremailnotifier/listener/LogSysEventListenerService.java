@@ -11,18 +11,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class LogSysEventListenerService implements EventListener {
 
-    private static boolean READ = true;
-    private static final int TIMEOUT_READING_SECONDS = 60;
-
+    private  boolean READ = true;
+    private  final String APP_SETTINGS_FILE = "app.properties";
+    private Properties appProperties = new Properties();
     private final MailService mailService;
     private final DbReaderService dbReaderService;
 
@@ -33,12 +37,29 @@ public class LogSysEventListenerService implements EventListener {
         this.mailService = mailService;
     }
 
+    private Properties getConfig() {
+        FileInputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(APP_SETTINGS_FILE);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            appProperties.load(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return appProperties;
+
+    }
+
     public void listenNewEvent() {
+        int periodTimeout = Integer.parseInt((getConfig().getProperty("period.timeout")));
         while (READ) {
             try {
                 //get incoming events from  mysql db
                 ArrayList<LogSysEvent> sysEventList = dbReaderService.
-                        getLogSysEventList(TIMEOUT_READING_SECONDS);
+                        getLogSysEventList(periodTimeout);
 
                 if (sysEventList != null) {
                     //sending message but before filter by templates
@@ -48,7 +69,7 @@ public class LogSysEventListenerService implements EventListener {
                         sendMailByTemplate(xmlMailTemplates, logSysEvent);
                     }
                 }
-                Thread.sleep(1000 * TIMEOUT_READING_SECONDS);
+                Thread.sleep(1000 * periodTimeout);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (SQLException e) {
@@ -70,7 +91,7 @@ public class LogSysEventListenerService implements EventListener {
     private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateXmlList,
                                     @NonNull LogSysEvent logSysEvent) throws SQLException {
 
-        //get  templates with delays for sending
+        //get  templates with delays for sending for knowing events
         ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplates =
                 dbReaderService.getLogSysEventMailDbTemplateList();
 
@@ -129,7 +150,6 @@ public class LogSysEventListenerService implements EventListener {
 
      private boolean logSysEventContainMailTemplateXml(@NonNull LogSysEvent logSysEvent,
                                                         @NonNull MailTemplate mailTemplateXml) {
-
         return mailTemplateXml.getLogName().toLowerCase()
                 .contains(logSysEvent.getSysLogTag().toLowerCase());
     }

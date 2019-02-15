@@ -15,10 +15,10 @@ import java.util.Properties;
 
 @Service
 public class MailService {
-    private static final String MAIL_SETTINGS_FILE = "app.properties";
-    private static String LOGANALYZER_LOG_LINK_TEMPLATE="http://172.172.174.100/loganalyzer/details.php?uid=";
-    private static final String MAIL_TEMPLATE_RECIPIENTS = "log_mail_recipient.xml";
-    private static Properties mailProperties = new Properties();
+    private  final String MAIL_SETTINGS_FILE = "app.properties";
+    private final String LOGANALYZER_LOG_LINK_TEMPLATE="http://172.172.174.100/loganalyzer/details.php?uid=";
+    private final String MAIL_TEMPLATE_RECIPIENTS = "log_mail_recipient.xml";
+    private  Properties mailProperties = new Properties();
 
      private Properties readEmailSettings() {
         FileInputStream inputStream = null;
