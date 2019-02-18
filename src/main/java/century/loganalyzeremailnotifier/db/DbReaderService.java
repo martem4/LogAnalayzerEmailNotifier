@@ -48,7 +48,13 @@ public class DbReaderService {
         ResultSet rs;
         try {
             statement = getConnectionToDb().createStatement();
-            String query = "select ID ,ReceivedAt ,DeviceReportedTime ,Facility ,Priority ,FromHost , substring(Message, position('ERROR' in Message)) as Message " +
+            String query = "select DISTINCT date_format(ReceivedAt,'%Y-%m-%d %H:%i') as ReceivedAt " +
+                    ",date_format(DeviceReportedTime ,'%Y-%m-%d %H:%i') as DeviceReportedTime" +
+                    ",Facility " +
+                    ",Priority " +
+                    ",FromHost " +
+                    ", substring(Message" +
+                    ", position('ERROR' in Message)) as Message " +
                     " ,SysLogTag" +
                     " from syslog.systemevents t" +
                     " where t.ReceivedAt >= date_sub(now(), interval " + timeOutReading + " second )\n" +
@@ -56,7 +62,7 @@ public class DbReaderService {
             rs = statement.executeQuery(query);
 
             while (rs.next()) {
-                logSysEventList.add(new LogSysEvent(rs.getInt("ID"),
+                logSysEventList.add(new LogSysEvent(0,
                         rs.getDate("ReceivedAt"),
                         rs.getDate("DeviceReportedTime"),
                         rs.getInt("Facility"),
