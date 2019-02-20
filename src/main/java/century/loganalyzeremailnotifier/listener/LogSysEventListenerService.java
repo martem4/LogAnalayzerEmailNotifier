@@ -166,8 +166,12 @@ public class LogSysEventListenerService implements EventListener {
     private boolean logSysEventContainMailDbExcludeTemplate(List<LogSysEventMailDbTemplate> logSysEventMailDbExludeTemplates,
                                                               LogSysEvent logSysEvent) {
         if (logSysEventMailDbExludeTemplates != null) {
-            return logSysEventMailDbExludeTemplates.stream().map(LogSysEventMailDbTemplate::getTemplateText).
-                    collect(Collectors.toList()).contains(logSysEvent.getMessage());
+            List<String> excludeTemplateList = logSysEventMailDbExludeTemplates.stream().map(LogSysEventMailDbTemplate::getTemplateText).
+                    collect(Collectors.toList());
+            for (String template : excludeTemplateList) {
+                if (logSysEvent.getMessage().toLowerCase().contains(template.toLowerCase()))
+                    return true;
+            }
         }
         return false;
     }

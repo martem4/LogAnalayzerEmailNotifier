@@ -11,9 +11,8 @@
     <properties>
         <spring.version>5.0.8.RELEASE</spring.version>
         <lombock.version>1.18.2</lombock.version>
-        <slf4jVersion>1.6.1</slf4jVersion>
+        <slf4jVersion>1.7.5</slf4jVersion>
     </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -34,7 +33,7 @@
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
-                            <mainClass>Main</mainClass>
+                            <mainClass>century.loganalyzeremailnotifier.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -47,7 +46,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
-                            <mainClass>Main</mainClass>
+                            <mainClass>century.loganalyzeremailnotifier.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -89,6 +88,11 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4jVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

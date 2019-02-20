@@ -56,7 +56,7 @@ public class DbReaderService {
                     ", substring(Message" +
                     ", position('ERROR' in Message)) as Message " +
                     " ,SysLogTag" +
-                    " from syslog.systemevents t" +
+                    " from syslog_test.systemevents t" +
                     " where t.ReceivedAt >= date_sub(now(), interval " + timeOutReading + " second )\n" +
                     "  and t.ReceivedAt < now();";
             rs = statement.executeQuery(query);
