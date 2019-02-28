@@ -157,7 +157,7 @@ public class DbReaderService {
             rs = statement.executeQuery(query);
             while (rs.next()) {
                 logSysEventGroupList.add(new LogSysEventGroup(
-                        rs.getString("Message"),
+                        rs.getString("msg"),
                         rs.getString("SysLogTag"),
                         rs.getInt("Count")));
             }

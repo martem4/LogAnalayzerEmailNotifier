@@ -47,9 +47,9 @@ public class MailService {
                     }
                 });
 
-        MimeMessage mimeMessage = new MimeMessage(session);
         for (String recipient : mailRecipients) {
             try {
+                MimeMessage mimeMessage = new MimeMessage(session);
                 mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
                 mimeMessage.setSubject(programName);
                 mimeMessage.setText(LOGANALYZER_LOG_LINK_TEMPLATE + id + "\n" + messgage);
