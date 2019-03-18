@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
-@XmlRootElement(name = "mailTemplate")
+//@XmlRootElement(name = "mailTemplate")
 public class MailTemplate {
     public MailTemplate() {}
 
@@ -13,7 +13,6 @@ public class MailTemplate {
         this.logName = logName;
         this.recipients = recipients;
     }
-
     String logName;
     List<String> recipients;
 
@@ -25,8 +24,8 @@ public class MailTemplate {
         this.logName = logName;
     }
 
-    @XmlElementWrapper
-    @XmlElement(name = "recipient")
+//    @XmlElementWrapper
+//    @XmlElement(name = "recipient")
     public List<String> getRecipients() {
         return recipients;
     }

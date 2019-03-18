@@ -2,6 +2,8 @@ package century.loganalyzeremailnotifier.db;
 
 import century.loganalyzeremailnotifier.model.LogSysEventGroup;
 import century.loganalyzeremailnotifier.model.LogSysEventMailDbTemplate;
+import century.loganalyzeremailnotifier.model.MailTemplate;
+import javafx.util.Pair;
 import lombok.Cleanup;
 import century.loganalyzeremailnotifier.model.LogSysEvent;
 import org.springframework.stereotype.Service;
@@ -10,8 +12,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DbReaderService {
@@ -169,4 +171,35 @@ public class DbReaderService {
         }
         return logSysEventGroupList;
     }
+
+    public Map<String, List<String>> getMailTemplateList() throws SQLException {
+        ArrayList<MailTemplate> mailTemplateList = new ArrayList<MailTemplate>();
+        HashMap<String, List<String>> mailTemplateMap = new HashMap<>();
+        Statement statement = null;
+        ResultSet rs;
+
+        try {
+            statement = getConnectionToDb().createStatement();
+            String query = "select p.name\n" +
+                    "      ,group_concat(r.mail)\n" +
+                    "from project p\n" +
+                    "join project_recipient pr\n" +
+                    "  on p.id = pr.project_id\n" +
+                    "join recipient r on pr.recipient_id = r.id\n" +
+                    "group by p.name;";
+
+            rs = statement.executeQuery(query);
+            while (rs.next()) {
+                mailTemplateMap.put(
+                        rs.getString("name"),
+                        new ArrayList<String>(rs.getArray("mail")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            statement.getConnection().close();
+        }
+        return recordList.stream().collect(Collectors.groupingBy(
+   }
 }

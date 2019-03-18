@@ -58,9 +58,7 @@ public class LogSysEventListenerService implements EventListener {
         while (READ) {
             try {
                 //get incoming events from  mysql db
-                ArrayList<LogSysEvent> sysEventList = dbReaderService.
-                        getLogSysEventList(periodTimeout);
-
+                ArrayList<LogSysEvent> sysEventList = dbReaderService.getLogSysEventList(periodTimeout);
                 if (sysEventList != null) {
                     //sending message but before filter by templates
                     //get templates from xml file (what to send)
