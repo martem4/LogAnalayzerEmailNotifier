@@ -1,36 +1,16 @@
 package century.loganalyzeremailnotifier.model;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
+import lombok.Data;
+
+import java.sql.Array;
 import java.util.List;
 
 //@XmlRootElement(name = "mailTemplate")
+@Data
 public class MailTemplate {
-    public MailTemplate() {}
 
-    public MailTemplate(String logName, List<String> recipients) {
-        this.logName = logName;
-        this.recipients = recipients;
-    }
-    String logName;
-    List<String> recipients;
-
-    public String getLogName() {
-        return logName;
-    }
-
-    public void setLogName(String logName) {
-        this.logName = logName;
-    }
-
+    private final String logName;
+    private final String recipient;
 //    @XmlElementWrapper
 //    @XmlElement(name = "recipient")
-    public List<String> getRecipients() {
-        return recipients;
-    }
-
-    public void setRecipients(List<String> recipients) {
-        this.recipients = recipients;
-    }
 }

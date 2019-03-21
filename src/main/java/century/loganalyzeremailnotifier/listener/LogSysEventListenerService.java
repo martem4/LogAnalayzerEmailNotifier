@@ -14,10 +14,9 @@ import org.springframework.stereotype.Service;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.Array;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -62,9 +61,9 @@ public class LogSysEventListenerService implements EventListener {
                 if (sysEventList != null) {
                     //sending message but before filter by templates
                     //get templates from xml file (what to send)
-                    List<MailTemplate> xmlMailTemplates = mailService.getMailTemplateXml();
+                    Map<String, Array> mailTemplate = dbReaderService.getMailTemplateMap();
                     for (LogSysEvent logSysEvent : sysEventList) {
-                        sendMailByTemplate(xmlMailTemplates, logSysEvent);
+                        //sendMailByTemplate(xmlMailTemplates, logSysEvent);
                     }
                 }
                 Thread.sleep(1000 * periodTimeout);

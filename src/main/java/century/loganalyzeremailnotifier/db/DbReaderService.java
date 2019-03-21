@@ -3,12 +3,12 @@ package century.loganalyzeremailnotifier.db;
 import century.loganalyzeremailnotifier.model.LogSysEventGroup;
 import century.loganalyzeremailnotifier.model.LogSysEventMailDbTemplate;
 import century.loganalyzeremailnotifier.model.MailTemplate;
-import javafx.util.Pair;
-import lombok.Cleanup;
 import century.loganalyzeremailnotifier.model.LogSysEvent;
+import com.sun.istack.internal.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
@@ -17,39 +17,32 @@ import java.util.stream.Collectors;
 
 @Service
 public class DbReaderService {
-    private static final String JDBC_PROPERTIES_FILE = "app.properties";
+    private static final String APP_PROPERTIES = "app.properties";
 
-    private Properties readDbConProperties() throws IOException {
-        Properties propertiesDb = new Properties();
-        @Cleanup InputStream inputStream = new FileInputStream(JDBC_PROPERTIES_FILE);
-        propertiesDb.load(inputStream);
-        return propertiesDb;
+
+
+    private Properties getProperties() throws IOException {
+        Properties properties = new Properties();
+        InputStream inputStream = null;
+        inputStream = new FileInputStream(APP_PROPERTIES);
+        properties.load(inputStream);
+        return properties;
     }
 
-    private Connection getConnectionToDb() {
-        Properties propertiesDb = null;
-        try {
-            propertiesDb = readDbConProperties();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            return DriverManager.getConnection(propertiesDb.getProperty("db.url"),
-                    propertiesDb.getProperty("db.login"),
-                    propertiesDb.getProperty("db.password"));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public Connection getConnection() throws SQLException, IOException {
+        Properties propertiesDb = getProperties();
+        return DriverManager.getConnection(propertiesDb.getProperty("db.url"),
+                propertiesDb.getProperty("db.login"),
+                propertiesDb.getProperty("db.password"));
     }
 
-    public ArrayList<LogSysEvent> getLogSysEventList(int timeOutReading) throws SQLException {
+    public ArrayList<LogSysEvent> getLogSysEventList(@NotNull Connection connection, int timeOutReading)
+            throws SQLException {
         ArrayList<LogSysEvent> logSysEventList = new ArrayList<LogSysEvent>();
         Statement statement = null;
         ResultSet rs;
         try {
-            statement = getConnectionToDb().createStatement();
+            statement = connection.createStatement();
             String query = "select min(id) as minId,\n" +
                     "       substring(Message, position('ERROR' in Message)) as Msg,\n" +
                     "       min(date_format(ReceivedAt, '%Y-%m-%d %H:%i')) as RcvAt,\n" +
@@ -76,48 +69,40 @@ public class DbReaderService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            statement.getConnection().close();
+            return logSysEventList;
         }
-        return logSysEventList;
+        return null;
     }
 
-    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailDbTemplateList() throws SQLException {
-            ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplateList = new ArrayList<>();
-            Statement statement = null;
-            ResultSet rs;
-
-        try {
-            statement = getConnectionToDb().createStatement();
-            String query = "select ID, `Interval`, IntervalBits, HitPercentage, TemplateText, SysLogTag" +
-                    " from syslog.systemevents_mail_template t;";
-
-            rs = statement.executeQuery(query);
-            while (rs.next()) {
-                logSysEventMailDbTemplateList.add(new LogSysEventMailDbTemplate(
-                        rs.getInt("ID"),
-                        rs.getInt("Interval"),
-                        rs.getInt("IntervalBits"),
-                        rs.getInt("HitPercentage"),
-                        rs.getString("TemplateText"),
-                        rs.getString("SysLogTag")));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        finally {
-            statement.getConnection().close();
-        }
-        return logSysEventMailDbTemplateList;
-    }
-
-    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailExcludeDbTemplateList() throws SQLException {
+    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailDbTemplateList(Connection connection)
+            throws SQLException {
         ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplateList = new ArrayList<>();
         Statement statement = null;
         ResultSet rs;
 
-        try {
-            statement = getConnectionToDb().createStatement();
+        statement = connection.createStatement();
+        String query = "select ID, `Interval`, IntervalBits, HitPercentage, TemplateText, SysLogTag" +
+                " from syslog.systemevents_mail_template t;";
+
+        rs = statement.executeQuery(query);
+        while (rs.next()) {
+            logSysEventMailDbTemplateList.add(new LogSysEventMailDbTemplate(
+                    rs.getInt("ID"),
+                    rs.getInt("Interval"),
+                    rs.getInt("IntervalBits"),
+                    rs.getInt("HitPercentage"),
+                    rs.getString("TemplateText"),
+                    rs.getString("SysLogTag")));
+        }
+    }
+
+    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailExcludeDbTemplateList(Connection connection)
+            throws SQLException {
+        ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplateList = new ArrayList<>();
+        Statement statement;
+        ResultSet rs;
+
+            statement = connection.createStatement();
             String query = "select TemplateText, SysLogTag" +
                     " from syslog.systemevents_exclude_mail_template t;";
 
@@ -127,23 +112,17 @@ public class DbReaderService {
                         rs.getString("TemplateText"),
                         rs.getString("SysLogTag")));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        finally {
-            statement.getConnection().close();
-        }
         return logSysEventMailDbTemplateList;
     }
 
-    public ArrayList<LogSysEventGroup> getLogSysEventGroupList(int startInterval,
+    public ArrayList<LogSysEventGroup> getLogSysEventGroupList(Connection connection, int startInterval,
                                                                int stopInterval) throws SQLException {
         ArrayList<LogSysEventGroup> logSysEventGroupList = new ArrayList<LogSysEventGroup>();
         Statement statement = null;
         ResultSet rs;
 
         try {
-            statement = getConnectionToDb().createStatement();
+            statement = connection.createStatement();
             String query = "select\n" +
                     "  substring(Message, position('ERROR' in Message)) as msg ,\n" +
                     "  SysLogTag,\n" +
@@ -151,8 +130,8 @@ public class DbReaderService {
                     "from\n" +
                     "  syslog.systemevents t\n" +
                     "where\n" +
-                    "  t.ReceivedAt >= date_sub(now(), interval "+startInterval+" second)\n" +
-                    "  and t.ReceivedAt < date_sub(now(), interval "+stopInterval+" second)\n" +
+                    "  t.ReceivedAt >= date_sub(now(), interval " + startInterval + " second)\n" +
+                    "  and t.ReceivedAt < date_sub(now(), interval " + stopInterval + " second)\n" +
                     "group by msg, SysLogTag\n" +
                     "order by  Count desc";
 
@@ -165,41 +144,37 @@ public class DbReaderService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             statement.getConnection().close();
         }
         return logSysEventGroupList;
     }
 
-    public Map<String, List<String>> getMailTemplateList() throws SQLException {
-        ArrayList<MailTemplate> mailTemplateList = new ArrayList<MailTemplate>();
+    public Map<String, List<MailTemplate>> getMailTemplateMap(Connection connection) throws SQLException {
         HashMap<String, List<String>> mailTemplateMap = new HashMap<>();
-        Statement statement = null;
+        List<MailTemplate> mailTemplateList = new ArrayList<>();
         ResultSet rs;
 
-        try {
-            statement = getConnectionToDb().createStatement();
-            String query = "select p.name\n" +
-                    "      ,group_concat(r.mail)\n" +
-                    "from project p\n" +
-                    "join project_recipient pr\n" +
-                    "  on p.id = pr.project_id\n" +
-                    "join recipient r on pr.recipient_id = r.id\n" +
-                    "group by p.name;";
+        Statement statement = connection.createStatement();
+        String query = "select p.name as name\n" +
+                ",r.mail as mail\n" +
+                "from project p\n" +
+                "join project_recipient pr\n" +
+                "on p.id = pr.project_id\n" +
+                "join recipient r on pr.recipient_id = r.id\n" +
+                "order by name";
 
-            rs = statement.executeQuery(query);
-            while (rs.next()) {
-                mailTemplateMap.put(
-                        rs.getString("name"),
-                        new ArrayList<String>(rs.getArray("mail")));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        rs = statement.executeQuery(query);
+        while (rs.next()) {
+            mailTemplateList.add(
+                    new MailTemplate(
+                            rs.getString("name"),
+                            rs.getString("mail")));
         }
-        finally {
-            statement.getConnection().close();
+
+        if (mailTemplateList != null) {
+            return mailTemplateList.stream().collect(Collectors.groupingBy(MailTemplate::getLogName));
         }
-        return recordList.stream().collect(Collectors.groupingBy(
-   }
+        else return null;
+    }
 }
