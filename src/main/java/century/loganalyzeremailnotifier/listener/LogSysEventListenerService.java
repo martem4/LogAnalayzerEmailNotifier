@@ -93,7 +93,7 @@ public class LogSysEventListenerService implements EventListener {
                 List<String> recipients = getRecipients(logSysEvent, mailTemplateMap);
                 if (logSysEventContainExcludeMailTemplate(excludeMailTemplateList, logSysEvent)) { continue; }
                 if (logSysEventContainSmartMailTemplate(smartMailTemplateList, logSysEvent)) {
-                    sendMailByTemplateWithHittingPercentage(smartMailTemplateList, logSysEvent, recipients);
+                    sendMailBySmartTemplateWithHittingPercentage(smartMailTemplateList, logSysEvent, recipients);
                 } else {
                     log.info("Sending message without calculation percentage for " + logSysEvent.getSysLogTag());
                     mailService.sendMail(recipients,
@@ -105,12 +105,12 @@ public class LogSysEventListenerService implements EventListener {
         }
     }
 
-    private void sendMailByTemplateWithHittingPercentage(List<SmartMailTemplate> smartMailTemplateList,
+    private void sendMailBySmartTemplateWithHittingPercentage(List<SmartMailTemplate> smartMailTemplateList,
                                                          LogSysEvent logSysEvent,
                                                          List<String> recipients) throws SQLException {
-        for (LogSysEventMailDbTemplate logSysEventMailDbTemplate : logSysEventMailDbTemplates) {
-            if (logSysEvent.getMessage().contains(logSysEventMailDbTemplate.getTemplateText())) {
-                if (isOverLimitHitting(logSysEvent, logSysEventMailDbTemplate)) {
+        for (SmartMailTemplate smartMailTemplate : smartMailTemplateList) {
+            if (logSysEvent.getMessage().contains(smartMailTemplate.getTemplateText())) {
+                if (isOverLimitHitting(logSysEvent, smartMailTemplate)) {
                     log.info("Sending message with calculation percentage for " +  logSysEvent.getSysLogTag());
                     mailService.sendMail(recipients,
                             logSysEvent.getMessage(),
@@ -124,7 +124,7 @@ public class LogSysEventListenerService implements EventListener {
         }
     }
 
-    private boolean isOverLimitHitting(LogSysEvent logSysEvent, LogSysEventMailDbTemplate logSysEventMailDbTemplate)
+    private boolean isOverLimitHitting(LogSysEvent logSysEvent, SmartMailTemplate smartMailTemplate)
             throws SQLException {
         int logSysEventHitPercentage = getLogSysEventHittingPercentage(logSysEventMailDbTemplate, logSysEvent);
         int logSysEventHitPercentageLimit = logSysEventMailDbTemplate.getHitPercentage();
