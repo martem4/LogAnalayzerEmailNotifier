@@ -10,11 +10,9 @@ import century.loganalyzeremailnotifier.model.MailTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.Array;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,7 +47,6 @@ public class LogSysEventListenerService implements EventListener {
             e.printStackTrace();
         }
         return appProperties;
-
     }
 
     public void listenNewEvent() {
@@ -58,12 +55,13 @@ public class LogSysEventListenerService implements EventListener {
             try {
                 //get incoming events from  mysql db
                 ArrayList<LogSysEvent> sysEventList = dbReaderService.getLogSysEventList(periodTimeout);
+                Map<String, List<MailTemplate>> mailTemplateMap = dbReaderService.getMailTemplate();
+
                 if (sysEventList != null) {
                     //sending message but before filter by templates
                     //get templates from xml file (what to send)
-                    Map<String, Array> mailTemplate = dbReaderService.getMailTemplateMap();
                     for (LogSysEvent logSysEvent : sysEventList) {
-                        //sendMailByTemplate(xmlMailTemplates, logSysEvent);
+                        sendMailByTemplate(mailTemplateMap, logSysEvent);
                     }
                 }
                 Thread.sleep(1000 * periodTimeout);
@@ -85,7 +83,7 @@ public class LogSysEventListenerService implements EventListener {
         return null;
     }
 
-    private void sendMailByTemplate(@NonNull List<MailTemplate> mailTemplateXmlList,
+    private void sendMailByTemplate(@NonNull Map<String, List<MailTemplate>> mailTemplateMap,
                                     @NonNull LogSysEvent logSysEvent) throws SQLException {
 
         //get  templates with delays for sending for knowing events
@@ -96,9 +94,12 @@ public class LogSysEventListenerService implements EventListener {
         ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbExcludeTemplates =
                 dbReaderService.getLogSysEventMailExcludeDbTemplateList();
 
+
         //consider all templates
-        for (MailTemplate mailTemplateXml : mailTemplateXmlList) {
-            if (logSysEventContainMailTemplateXml(logSysEvent, mailTemplateXml)) {
+            if (logSysEventContainMailTemplate(logSysEvent, mailTemplateXml)) {
+                if () {
+
+                }
                 if (logSysEventContainMailDbExcludeTemplate(logSysEventMailDbExcludeTemplates, logSysEvent)) {
                     continue;
                 }
@@ -114,8 +115,6 @@ public class LogSysEventListenerService implements EventListener {
                             logSysEvent.getId());
                 }
             }
-
-        }
     }
 
     private void sendMailByTemplateWithHittingPercentage(List<LogSysEventMailDbTemplate> logSysEventMailDbTemplates,
@@ -145,10 +144,9 @@ public class LogSysEventListenerService implements EventListener {
         return logSysEventHitPercentage >= logSysEventHitPercentageLimit;
     }
 
-     private boolean logSysEventContainMailTemplateXml(@NonNull LogSysEvent logSysEvent,
-                                                        @NonNull MailTemplate mailTemplateXml) {
-        return mailTemplateXml.getLogName().toLowerCase()
-                .contains(logSysEvent.getSysLogTag().toLowerCase());
+     private boolean logSysEventContainMailTemplate(@NonNull LogSysEvent logSysEvent,
+                                                        @NonNull Map<String, List<String>> mailTemplateMap) {
+        return mailTemplateMap.containsKey(logSysEvent.getSysLogTag());
     }
 
     private boolean logSysEventContainMailDbTemplate(List<LogSysEventMailDbTemplate> logSysEventMailDbTemplates,

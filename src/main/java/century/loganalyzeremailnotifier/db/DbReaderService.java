@@ -4,11 +4,8 @@ import century.loganalyzeremailnotifier.model.LogSysEventGroup;
 import century.loganalyzeremailnotifier.model.LogSysEventMailDbTemplate;
 import century.loganalyzeremailnotifier.model.MailTemplate;
 import century.loganalyzeremailnotifier.model.LogSysEvent;
-import com.sun.istack.internal.NotNull;
 import org.springframework.stereotype.Service;
-
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
@@ -18,8 +15,17 @@ import java.util.stream.Collectors;
 @Service
 public class DbReaderService {
     private static final String APP_PROPERTIES = "app.properties";
+    private Connection connection;
 
-
+    public DbReaderService() {
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private Properties getProperties() throws IOException {
         Properties properties = new Properties();
@@ -29,14 +35,18 @@ public class DbReaderService {
         return properties;
     }
 
-    public Connection getConnection() throws SQLException, IOException {
+    private Connection getConnection() throws SQLException, IOException {
         Properties propertiesDb = getProperties();
         return DriverManager.getConnection(propertiesDb.getProperty("db.url"),
                 propertiesDb.getProperty("db.login"),
                 propertiesDb.getProperty("db.password"));
     }
 
-    public ArrayList<LogSysEvent> getLogSysEventList(@NotNull Connection connection, int timeOutReading)
+    public void closeConnection() throws SQLException {
+        this.connection.close();
+    }
+
+    public ArrayList<LogSysEvent> getLogSysEventList(int timeOutReading)
             throws SQLException {
         ArrayList<LogSysEvent> logSysEventList = new ArrayList<LogSysEvent>();
         Statement statement = null;
@@ -74,15 +84,15 @@ public class DbReaderService {
         return null;
     }
 
-    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailDbTemplateList(Connection connection)
+    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailDbTemplateList()
             throws SQLException {
         ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplateList = new ArrayList<>();
         Statement statement = null;
         ResultSet rs;
 
-        statement = connection.createStatement();
-        String query = "select ID, `Interval`, IntervalBits, HitPercentage, TemplateText, SysLogTag" +
-                " from syslog.systemevents_mail_template t;";
+        statement = this.connection.createStatement();
+        String query = "SELECT ID, `Interval`, IntervalBits, HitPercentage, TemplateText, SysLogTag" +
+                " FROM syslog.systemevents_mail_template t;";
 
         rs = statement.executeQuery(query);
         while (rs.next()) {
@@ -94,15 +104,16 @@ public class DbReaderService {
                     rs.getString("TemplateText"),
                     rs.getString("SysLogTag")));
         }
+        return logSysEventMailDbTemplateList;
     }
 
-    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailExcludeDbTemplateList(Connection connection)
+    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailExcludeDbTemplateList()
             throws SQLException {
         ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplateList = new ArrayList<>();
         Statement statement;
         ResultSet rs;
 
-            statement = connection.createStatement();
+            statement = this.connection.createStatement();
             String query = "select TemplateText, SysLogTag" +
                     " from syslog.systemevents_exclude_mail_template t;";
 
@@ -114,15 +125,14 @@ public class DbReaderService {
             }
         return logSysEventMailDbTemplateList;
     }
-
-    public ArrayList<LogSysEventGroup> getLogSysEventGroupList(Connection connection, int startInterval,
+    public ArrayList<LogSysEventGroup> getLogSysEventGroupList(int startInterval,
                                                                int stopInterval) throws SQLException {
         ArrayList<LogSysEventGroup> logSysEventGroupList = new ArrayList<LogSysEventGroup>();
         Statement statement = null;
         ResultSet rs;
 
         try {
-            statement = connection.createStatement();
+            statement = this.connection.createStatement();
             String query = "select\n" +
                     "  substring(Message, position('ERROR' in Message)) as msg ,\n" +
                     "  SysLogTag,\n" +
@@ -150,7 +160,7 @@ public class DbReaderService {
         return logSysEventGroupList;
     }
 
-    public Map<String, List<MailTemplate>> getMailTemplateMap(Connection connection) throws SQLException {
+    public Map<String, List<MailTemplate>> getMailTemplate() throws SQLException {
         HashMap<String, List<String>> mailTemplateMap = new HashMap<>();
         List<MailTemplate> mailTemplateList = new ArrayList<>();
         ResultSet rs;
