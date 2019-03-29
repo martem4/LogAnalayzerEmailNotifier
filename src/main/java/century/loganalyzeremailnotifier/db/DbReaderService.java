@@ -1,7 +1,6 @@
 package century.loganalyzeremailnotifier.db;
 
 import century.loganalyzeremailnotifier.model.*;
-import century.loganalyzeremailnotifier.model.LogSysEventMailDbTemplate;
 import org.springframework.stereotype.Service;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -105,8 +104,7 @@ public class DbReaderService {
         return logSysEventMailDbTemplateList;
     }
 
-    public ArrayList<ExcludeMailTemplate> getLogSysEventMailExcludeDbTemplateList()
-            throws SQLException {
+    public ArrayList<ExcludeMailTemplate> getExcludeMailTemplateList() throws SQLException {
         ArrayList<ExcludeMailTemplate> excludeMailTemplateList = new ArrayList<>();
         Statement statement;
         ResultSet rs;

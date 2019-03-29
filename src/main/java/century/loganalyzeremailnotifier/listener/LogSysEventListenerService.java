@@ -1,14 +1,9 @@
 package century.loganalyzeremailnotifier.listener;
 
 import century.loganalyzeremailnotifier.db.DbReaderService;
-import century.loganalyzeremailnotifier.model.LogSysEventGroup;
-import century.loganalyzeremailnotifier.model.LogSysEventMailDbTemplate;
-import century.loganalyzeremailnotifier.model.SmartMailDbTemplate;
-import century.loganalyzeremailnotifier.model.SmartMailTemplate;
+import century.loganalyzeremailnotifier.model.*;
 import lombok.NonNull;
 import century.loganalyzeremailnotifier.mail.MailService;
-import century.loganalyzeremailnotifier.model.LogSysEvent;
-import century.loganalyzeremailnotifier.model.MailTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,23 +51,19 @@ public class LogSysEventListenerService implements EventListener {
         while (READ) {
             try {
                 //get incoming events from  mysql db
-                ArrayList<LogSysEvent> sysEventList = dbReaderService.getLogSysEventList(periodTimeout);
+                ArrayList<LogSysEvent> logSysEventList = dbReaderService.getLogSysEventList(periodTimeout);
+                //get mail templates
                 Map<String, List<MailTemplate>> mailTemplateMap = dbReaderService.getMailTemplate();
+                //get smart mail templates
+                ArrayList<SmartMailTemplate> smartMailTemplateList = dbReaderService.getSmartMailTemplateList();
+                //get exclude mail templates
+                ArrayList<ExcludeMailTemplate> excludeMailTemplateList = dbReaderService.getExcludeMailTemplateList();
 
-                //get  templates with delays for sending for knowing events
-                ArrayList<SmartMailTemplate> smartMailTemplateList =
-                        dbReaderService.getSmartMailTemplateList();
-
-                //get templates for excluding to send
-                ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbExcludeTemplates =
-                        dbReaderService.getLogSysEventMailExcludeDbTemplateList();
-
-                if (sysEventList != null) {
+                if (logSysEventList != null) {
                     //sending message but before filter by templates
                     //get templates from xml file (what to send)
-                    for (LogSysEvent logSysEvent : sysEventList) {
-                        sendMailByTemplate(mailTemplateMap, logSysEvent);
-                    }
+                    sendMailByTemplate(mailTemplateMap, logSysEventList, smartMailTemplateList,
+                            excludeMailTemplateList);
                 }
                 Thread.sleep(1000 * periodTimeout);
             } catch (InterruptedException e) {
@@ -83,42 +74,38 @@ public class LogSysEventListenerService implements EventListener {
         }
     }
 
-    private MailTemplate getMailTemplateXml(LogSysEvent logSysEvent) {
-        List<MailTemplate> mailTemplatesXml = mailService.getMailTemplateXml();
-        if (mailTemplatesXml != null) {
-            return mailTemplatesXml.stream().filter(mailTemplate ->
+    private List<String> getRecipients(LogSysEvent logSysEvent, Map<String, List<MailTemplate>> mailTemplateMap) {
+        return mailTemplateMap.get(logSysEvent.getSysLogTag()).stream().map(MailTemplate::getRecipient).
+                collect(Collectors.toList());
+/*            return mailTemplatesXml.stream().filter(mailTemplate ->
                     logSysEvent.getSysLogTag().equals(mailTemplate.getLogName()))
                     .findAny().orElse(null);
-        }
-        return null;
+        }*/
     }
 
     private void sendMailByTemplate(@NonNull Map<String, List<MailTemplate>> mailTemplateMap,
-                                    @NonNull LogSysEvent logSysEvent) throws SQLException {
+                                    @NonNull List<LogSysEvent> logSysEventList,
+                                    List<SmartMailTemplate> smartMailTemplateList,
+                                    List<ExcludeMailTemplate> excludeMailTemplateList) throws SQLException {
 
-        //consider all templates
-            if (logSysEventContainMailTemplate(logSysEvent, mailTemplateXml)) {
-                if () {
-
-                }
-                if (logSysEventContainMailDbExcludeTemplate(logSysEventMailDbExcludeTemplates, logSysEvent)) {
-                    continue;
-                }
-                //if event is hitting with special templates
-                if (logSysEventContainMailDbTemplate(logSysEventMailDbTemplates, logSysEvent)) {
-                    sendMailByTemplateWithHittingPercentage(logSysEventMailDbTemplates,
-                            logSysEvent, mailTemplateXml.getRecipients());
+        for (LogSysEvent logSysEvent: logSysEventList) {
+            if(logSysEventContainMailTemplate(logSysEvent, mailTemplateMap)) {
+                List<String> recipients = getRecipients(logSysEvent, mailTemplateMap);
+                if (logSysEventContainExcludeMailTemplate(excludeMailTemplateList, logSysEvent)) { continue; }
+                if (logSysEventContainSmartMailTemplate(smartMailTemplateList, logSysEvent)) {
+                    sendMailByTemplateWithHittingPercentage(smartMailTemplateList, logSysEvent, recipients);
                 } else {
-                    log.info("Sending message without calculation percentage for " +  logSysEvent.getSysLogTag());
-                    mailService.sendMail(mailTemplateXml.getRecipients(),
+                    log.info("Sending message without calculation percentage for " + logSysEvent.getSysLogTag());
+                    mailService.sendMail(recipients,
                             logSysEvent.getMessage(),
                             logSysEvent.getSysLogTag(),
                             logSysEvent.getId());
                 }
             }
+        }
     }
 
-    private void sendMailByTemplateWithHittingPercentage(List<LogSysEventMailDbTemplate> logSysEventMailDbTemplates,
+    private void sendMailByTemplateWithHittingPercentage(List<SmartMailTemplate> smartMailTemplateList,
                                                          LogSysEvent logSysEvent,
                                                          List<String> recipients) throws SQLException {
         for (LogSysEventMailDbTemplate logSysEventMailDbTemplate : logSysEventMailDbTemplates) {
@@ -146,25 +133,25 @@ public class LogSysEventListenerService implements EventListener {
     }
 
      private boolean logSysEventContainMailTemplate(@NonNull LogSysEvent logSysEvent,
-                                                        @NonNull Map<String, List<String>> mailTemplateMap) {
+                                                        @NonNull Map<String, List<MailTemplate>> mailTemplateMap) {
         return mailTemplateMap.containsKey(logSysEvent.getSysLogTag());
     }
 
-    private boolean logSysEventContainMailDbTemplate(List<LogSysEventMailDbTemplate> logSysEventMailDbTemplates,
+    private boolean logSysEventContainSmartMailTemplate(List<SmartMailTemplate> smartMailTemplateList,
                                                        LogSysEvent logSysEvent) {
-        if (logSysEventMailDbTemplates != null) {
-            return logSysEventMailDbTemplates.stream().map(LogSysEventMailDbTemplate::getSysLogTag).
+        if (smartMailTemplateList != null) {
+            return smartMailTemplateList.stream().map(SmartMailTemplate::getSysLogTag).
                     collect(Collectors.toList()).contains(logSysEvent.getSysLogTag());
         }
         return false;
     }
 
-    private boolean logSysEventContainMailDbExcludeTemplate(List<LogSysEventMailDbTemplate> logSysEventMailDbExludeTemplates,
+    private boolean logSysEventContainExcludeMailTemplate(List<ExcludeMailTemplate> excludeMailTemplateList,
                                                               LogSysEvent logSysEvent) {
-        if (logSysEventMailDbExludeTemplates != null) {
-            List<String> excludeTemplateList = logSysEventMailDbExludeTemplates.stream().map(LogSysEventMailDbTemplate::getTemplateText).
+        if (excludeMailTemplateList != null) {
+            List<String> templateList = excludeMailTemplateList.stream().map(ExcludeMailTemplate::getTemplateText).
                     collect(Collectors.toList());
-            for (String template : excludeTemplateList) {
+            for (String template : templateList) {
                 if (logSysEvent.getMessage().toLowerCase().contains(template.toLowerCase()))
                     return true;
             }
