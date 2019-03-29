@@ -60,8 +60,6 @@ public class LogSysEventListenerService implements EventListener {
                 ArrayList<ExcludeMailTemplate> excludeMailTemplateList = dbReaderService.getExcludeMailTemplateList();
 
                 if (logSysEventList != null) {
-                    //sending message but before filter by templates
-                    //get templates from xml file (what to send)
                     sendMailByTemplate(mailTemplateMap, logSysEventList, smartMailTemplateList,
                             excludeMailTemplateList);
                 }
