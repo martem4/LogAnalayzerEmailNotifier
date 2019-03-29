@@ -2,9 +2,6 @@ package century.loganalyzeremailnotifier.model;
 
 import lombok.Data;
 
-import java.sql.Array;
-import java.util.List;
-
 //@XmlRootElement(name = "mailTemplate")
 @Data
 public class MailTemplate {

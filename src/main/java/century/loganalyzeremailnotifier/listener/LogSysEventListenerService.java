@@ -3,6 +3,8 @@ package century.loganalyzeremailnotifier.listener;
 import century.loganalyzeremailnotifier.db.DbReaderService;
 import century.loganalyzeremailnotifier.model.LogSysEventGroup;
 import century.loganalyzeremailnotifier.model.LogSysEventMailDbTemplate;
+import century.loganalyzeremailnotifier.model.SmartMailDbTemplate;
+import century.loganalyzeremailnotifier.model.SmartMailTemplate;
 import lombok.NonNull;
 import century.loganalyzeremailnotifier.mail.MailService;
 import century.loganalyzeremailnotifier.model.LogSysEvent;
@@ -57,6 +59,14 @@ public class LogSysEventListenerService implements EventListener {
                 ArrayList<LogSysEvent> sysEventList = dbReaderService.getLogSysEventList(periodTimeout);
                 Map<String, List<MailTemplate>> mailTemplateMap = dbReaderService.getMailTemplate();
 
+                //get  templates with delays for sending for knowing events
+                ArrayList<SmartMailTemplate> smartMailTemplateList =
+                        dbReaderService.getSmartMailTemplateList();
+
+                //get templates for excluding to send
+                ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbExcludeTemplates =
+                        dbReaderService.getLogSysEventMailExcludeDbTemplateList();
+
                 if (sysEventList != null) {
                     //sending message but before filter by templates
                     //get templates from xml file (what to send)
@@ -85,15 +95,6 @@ public class LogSysEventListenerService implements EventListener {
 
     private void sendMailByTemplate(@NonNull Map<String, List<MailTemplate>> mailTemplateMap,
                                     @NonNull LogSysEvent logSysEvent) throws SQLException {
-
-        //get  templates with delays for sending for knowing events
-        ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplates =
-                dbReaderService.getLogSysEventMailDbTemplateList();
-
-        //get templates for excluding to send
-        ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbExcludeTemplates =
-                dbReaderService.getLogSysEventMailExcludeDbTemplateList();
-
 
         //consider all templates
             if (logSysEventContainMailTemplate(logSysEvent, mailTemplateXml)) {

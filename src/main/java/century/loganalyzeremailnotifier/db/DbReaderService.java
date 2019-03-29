@@ -1,9 +1,7 @@
 package century.loganalyzeremailnotifier.db;
 
-import century.loganalyzeremailnotifier.model.LogSysEventGroup;
+import century.loganalyzeremailnotifier.model.*;
 import century.loganalyzeremailnotifier.model.LogSysEventMailDbTemplate;
-import century.loganalyzeremailnotifier.model.MailTemplate;
-import century.loganalyzeremailnotifier.model.LogSysEvent;
 import org.springframework.stereotype.Service;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -84,9 +82,9 @@ public class DbReaderService {
         return null;
     }
 
-    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailDbTemplateList()
+    public ArrayList<SmartMailTemplate> getSmartMailTemplateList()
             throws SQLException {
-        ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplateList = new ArrayList<>();
+        ArrayList<SmartMailTemplate> logSysEventMailDbTemplateList = new ArrayList<>();
         Statement statement = null;
         ResultSet rs;
 
@@ -96,7 +94,7 @@ public class DbReaderService {
 
         rs = statement.executeQuery(query);
         while (rs.next()) {
-            logSysEventMailDbTemplateList.add(new LogSysEventMailDbTemplate(
+            logSysEventMailDbTemplateList.add(new SmartMailTemplate(
                     rs.getInt("ID"),
                     rs.getInt("Interval"),
                     rs.getInt("IntervalBits"),
@@ -107,9 +105,9 @@ public class DbReaderService {
         return logSysEventMailDbTemplateList;
     }
 
-    public ArrayList<LogSysEventMailDbTemplate> getLogSysEventMailExcludeDbTemplateList()
+    public ArrayList<ExcludeMailTemplate> getLogSysEventMailExcludeDbTemplateList()
             throws SQLException {
-        ArrayList<LogSysEventMailDbTemplate> logSysEventMailDbTemplateList = new ArrayList<>();
+        ArrayList<ExcludeMailTemplate> excludeMailTemplateList = new ArrayList<>();
         Statement statement;
         ResultSet rs;
 
@@ -119,11 +117,11 @@ public class DbReaderService {
 
             rs = statement.executeQuery(query);
             while (rs.next()) {
-                logSysEventMailDbTemplateList.add(new LogSysEventMailDbTemplate(
+                excludeMailTemplateList.add(new ExcludeMailTemplate(
                         rs.getString("TemplateText"),
                         rs.getString("SysLogTag")));
             }
-        return logSysEventMailDbTemplateList;
+        return excludeMailTemplateList;
     }
     public ArrayList<LogSysEventGroup> getLogSysEventGroupList(int startInterval,
                                                                int stopInterval) throws SQLException {
