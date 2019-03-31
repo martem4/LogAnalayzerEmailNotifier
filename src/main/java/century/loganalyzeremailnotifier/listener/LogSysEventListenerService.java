@@ -87,7 +87,7 @@ public class LogSysEventListenerService implements EventListener {
                                     List<ExcludeMailTemplate> excludeMailTemplateList) throws SQLException {
 
         for (LogSysEvent logSysEvent: logSysEventList) {
-            if(checkLogSysEventContainMailTemplate(logSysEvent, mailTemplateMap)) {
+            if (checkLogSysEventContainMailTemplate(logSysEvent, mailTemplateMap)) {
                 List<String> recipients = getRecipients(logSysEvent, mailTemplateMap);
                 if (checkLogSysEventContainExcludeMailTemplate(excludeMailTemplateList, logSysEvent)) { continue; }
                 if (checkLogSysEventContainSmartMailTemplate(smartMailTemplateList, logSysEvent)) {
@@ -165,11 +165,11 @@ public class LogSysEventListenerService implements EventListener {
     private boolean checkLogSysEventContainExcludeMailTemplate(List<ExcludeMailTemplate> excludeMailTemplateList,
                                                               LogSysEvent logSysEvent) {
         if (excludeMailTemplateList != null) {
-            List<String> templateList = excludeMailTemplateList.stream().map(ExcludeMailTemplate::getTemplateText).
-                    collect(Collectors.toList());
-            for (String template : templateList) {
-                if (logSysEvent.getMessage().toLowerCase().matches(template.toLowerCase()))
+            for (ExcludeMailTemplate excludeMailTemplate : excludeMailTemplateList) {
+                if ((logSysEvent.getSysLogTag().toLowerCase().matches(excludeMailTemplate.getLogName().toLowerCase()))
+                && (logSysEvent.getMessage().toLowerCase().matches(excludeMailTemplate.getTemplateText()))) {
                     return true;
+                }
             }
         }
         return false;
