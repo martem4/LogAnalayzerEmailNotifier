@@ -108,8 +108,7 @@ public class LogSysEventListenerService implements EventListener {
                                                          List<String> recipients) throws SQLException {
 
         for (SmartMailTemplate smartMailTemplate : smartMailTemplateList) {
-            if ((smartMailTemplate.getTemplateText().matches(logSysEvent.getMessage()))
-                    && (smartMailTemplate.getSysLogTag().matches(logSysEvent.getSysLogTag()))) {
+            if (checkLogSysEventMatchSmartMailTemplate(logSysEvent, smartMailTemplate)) {
                 if (isOverLimitHitting(logSysEvent, smartMailTemplate)) {
                     log.info("Sending message with calculation percentage for " +  logSysEvent.getSysLogTag());
                     mailService.sendMail(recipients,
@@ -118,7 +117,7 @@ public class LogSysEventListenerService implements EventListener {
                             logSysEvent.getId());
                 }
                 else {
-                    log.info("The message was not sended because percentage is lower then needed!");
+                    log.info("The message was not send because percentage is lower then needed!");
                 }
             }
         }
@@ -159,14 +158,10 @@ public class LogSysEventListenerService implements EventListener {
 
     private boolean checkLogSysEventGroupMatchSmartMailTemplate(LogSysEventGroup logSysEventGroup,
                                                            SmartMailTemplate smartMailTemplate) {
-        if ((logSysEventGroup.getSysLogTag().toLowerCase().matches(smartMailTemplate.getSysLogTag().toLowerCase()))
+        return (logSysEventGroup.getSysLogTag().toLowerCase().matches(smartMailTemplate.getSysLogTag().toLowerCase()))
                 && (logSysEventGroup.getMessage().toLowerCase().
-                matches(smartMailTemplate.getTemplateText().toLowerCase()))) {
-            return true;
-        }
-        return false;
+                matches(smartMailTemplate.getTemplateText().toLowerCase()));
     }
-
     private boolean checkLogSysEventContainExcludeMailTemplate(List<ExcludeMailTemplate> excludeMailTemplateList,
                                                               LogSysEvent logSysEvent) {
         if (excludeMailTemplateList != null) {
