@@ -106,8 +106,10 @@ public class LogSysEventListenerService implements EventListener {
     private void sendMailBySmartTemplateWithHittingPercentage(List<SmartMailTemplate> smartMailTemplateList,
                                                          LogSysEvent logSysEvent,
                                                          List<String> recipients) throws SQLException {
+
         for (SmartMailTemplate smartMailTemplate : smartMailTemplateList) {
-            if (logSysEvent.getMessage().contains(smartMailTemplate.getTemplateText())) {
+            if ((smartMailTemplate.getTemplateText().matches(logSysEvent.getMessage()))
+                    && (smartMailTemplate.getSysLogTag().matches(logSysEvent.getSysLogTag()))) {
                 if (isOverLimitHitting(logSysEvent, smartMailTemplate)) {
                     log.info("Sending message with calculation percentage for " +  logSysEvent.getSysLogTag());
                     mailService.sendMail(recipients,
@@ -124,8 +126,8 @@ public class LogSysEventListenerService implements EventListener {
 
     private boolean isOverLimitHitting(LogSysEvent logSysEvent, SmartMailTemplate smartMailTemplate)
             throws SQLException {
-        int logSysEventHitPercentage = getLogSysEventHittingPercentage(logSysEventMailDbTemplate, logSysEvent);
-        int logSysEventHitPercentageLimit = logSysEventMailDbTemplate.getHitPercentage();
+        int logSysEventHitPercentage = getLogSysEventHittingPercentage(smartMailTemplate, logSysEvent);
+        int logSysEventHitPercentageLimit = smartMailTemplate.getHitPercentage();
 
         return logSysEventHitPercentage >= logSysEventHitPercentageLimit;
     }
@@ -138,8 +140,14 @@ public class LogSysEventListenerService implements EventListener {
     private boolean logSysEventContainSmartMailTemplate(List<SmartMailTemplate> smartMailTemplateList,
                                                        LogSysEvent logSysEvent) {
         if (smartMailTemplateList != null) {
-            return smartMailTemplateList.stream().map(SmartMailTemplate::getSysLogTag).
-                    collect(Collectors.toList()).contains(logSysEvent.getSysLogTag());
+            for (SmartMailTemplate smartMailTemplate : smartMailTemplateList) {
+                if ((smartMailTemplate.getTemplateText().matches(logSysEvent.getMessage()))
+                && (smartMailTemplate.getSysLogTag().matches(logSysEvent.getSysLogTag()))) {
+                    return true;
+                }
+            }
+//            return smartMailTemplateList.stream().map(SmartMailTemplate::getSysLogTag).
+//                    collect(Collectors.toList()).contains(logSysEvent.getSysLogTag());
         }
         return false;
     }
@@ -157,32 +165,32 @@ public class LogSysEventListenerService implements EventListener {
         return false;
     }
 
-    private int getLogSysEventHittingPercentage(@NonNull LogSysEventMailDbTemplate logSysEventMailDbTemplate,
+    private int getLogSysEventHittingPercentage(@NonNull SmartMailTemplate smartMailTemplate,
                                                  @NonNull LogSysEvent logSysEvent) throws SQLException {
-        int step = logSysEventMailDbTemplate.getInterval() / logSysEventMailDbTemplate.getIntervalBits();
-        int startInterval = logSysEventMailDbTemplate.getInterval();
-        int endInterval = logSysEventMailDbTemplate.getInterval() - step;
+        int step = smartMailTemplate.getInterval() / smartMailTemplate.getIntervalBits();
+        int startInterval = smartMailTemplate.getInterval();
+        int endInterval = smartMailTemplate.getInterval() - step;
         int hitCount = 0;
 
         while (endInterval >= 0) {
-            ArrayList<LogSysEventGroup> logSysEventGroups;
-            logSysEventGroups = dbReaderService.getLogSysEventGroupList(startInterval, endInterval);
-            startInterval = endInterval;
-            endInterval = startInterval - step;
+            //get batch of grouped logs, grouped by msg and syslogtag
+            ArrayList<LogSysEventGroup> logSysEventGroups = dbReaderService.
+                    getLogSysEventGroupList(startInterval, endInterval);
             if (logSysEventGroups != null) {
                 for (LogSysEventGroup logSysEventGroup : logSysEventGroups) {
-                    if (logSysEventGroup.getMessage().contains(logSysEvent.getMessage())) {
-                        if (logSysEventGroup.getCount() > 0) {
+                    if ((logSysEventGroup.getSysLogTag().matches(smartMailTemplate.getSysLogTag())) &&
+                            (logSysEventGroup.getMessage().matches(smartMailTemplate.getTemplateText()))) {
                             hitCount += 1;
-                        }
                     }
                 }
             }
+            //refresh interval params
+            startInterval = endInterval;
+            endInterval = startInterval - step;
         }
-        int hittingPercentage = ((hitCount / logSysEventMailDbTemplate.getIntervalBits()) * 100);
-        log.info("Hit count for " + logSysEventMailDbTemplate.getSysLogTag() + " = " );
-        log.info("Hit count for " + logSysEventMailDbTemplate.getSysLogTag() + " = " );
-
+        int hittingPercentage = ((hitCount / smartMailTemplate.getIntervalBits()) * 100);
+        log.info("Hit count for " + smartMailTemplate.getSysLogTag() + " = " );
+        log.info("Hit count for " + smartMailTemplate.getSysLogTag() + " = " );
         return  hittingPercentage;
     }
 
