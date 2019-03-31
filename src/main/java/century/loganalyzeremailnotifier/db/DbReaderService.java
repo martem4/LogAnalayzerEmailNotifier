@@ -157,7 +157,6 @@ public class DbReaderService {
     }
 
     public Map<String, List<MailTemplate>> getMailTemplate() throws SQLException {
-        HashMap<String, List<String>> mailTemplateMap = new HashMap<>();
         List<MailTemplate> mailTemplateList = new ArrayList<>();
         ResultSet rs;
 
@@ -178,9 +177,6 @@ public class DbReaderService {
                             rs.getString("mail")));
         }
 
-        if (mailTemplateList != null) {
-            return mailTemplateList.stream().collect(Collectors.groupingBy(MailTemplate::getLogName));
-        }
-        else return null;
+        return mailTemplateList.stream().collect(Collectors.groupingBy(MailTemplate::getLogName));
     }
 }
