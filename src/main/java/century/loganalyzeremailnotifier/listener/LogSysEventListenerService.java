@@ -87,10 +87,10 @@ public class LogSysEventListenerService implements EventListener {
                                     List<ExcludeMailTemplate> excludeMailTemplateList) throws SQLException {
 
         for (LogSysEvent logSysEvent: logSysEventList) {
-            if(logSysEventContainMailTemplate(logSysEvent, mailTemplateMap)) {
+            if(checkLogSysEventContainMailTemplate(logSysEvent, mailTemplateMap)) {
                 List<String> recipients = getRecipients(logSysEvent, mailTemplateMap);
-                if (logSysEventContainExcludeMailTemplate(excludeMailTemplateList, logSysEvent)) { continue; }
-                if (logSysEventContainSmartMailTemplate(smartMailTemplateList, logSysEvent)) {
+                if (checkLogSysEventContainExcludeMailTemplate(excludeMailTemplateList, logSysEvent)) { continue; }
+                if (checkLogSysEventContainSmartMailTemplate(smartMailTemplateList, logSysEvent)) {
                     sendMailBySmartTemplateWithHittingPercentage(smartMailTemplateList, logSysEvent, recipients);
                 } else {
                     log.info("Sending message without calculation percentage for " + logSysEvent.getSysLogTag());
@@ -131,34 +131,49 @@ public class LogSysEventListenerService implements EventListener {
 
         return logSysEventHitPercentage >= logSysEventHitPercentageLimit;
     }
-
-     private boolean logSysEventContainMailTemplate(@NonNull LogSysEvent logSysEvent,
+     private boolean checkLogSysEventContainMailTemplate(@NonNull LogSysEvent logSysEvent,
                                                         @NonNull Map<String, List<MailTemplate>> mailTemplateMap) {
         return mailTemplateMap.containsKey(logSysEvent.getSysLogTag());
     }
 
-    private boolean logSysEventContainSmartMailTemplate(List<SmartMailTemplate> smartMailTemplateList,
+    private boolean checkLogSysEventContainSmartMailTemplate(List<SmartMailTemplate> smartMailTemplateList,
                                                        LogSysEvent logSysEvent) {
         if (smartMailTemplateList != null) {
             for (SmartMailTemplate smartMailTemplate : smartMailTemplateList) {
-                if ((smartMailTemplate.getTemplateText().matches(logSysEvent.getMessage()))
-                && (smartMailTemplate.getSysLogTag().matches(logSysEvent.getSysLogTag()))) {
-                    return true;
-                }
+                return checkLogSysEventMatchSmartMailTemplate(logSysEvent, smartMailTemplate);
             }
-//            return smartMailTemplateList.stream().map(SmartMailTemplate::getSysLogTag).
-//                    collect(Collectors.toList()).contains(logSysEvent.getSysLogTag());
+
         }
         return false;
     }
 
-    private boolean logSysEventContainExcludeMailTemplate(List<ExcludeMailTemplate> excludeMailTemplateList,
+    private boolean checkLogSysEventMatchSmartMailTemplate(LogSysEvent logSysEvent,
+                                                           SmartMailTemplate smartMailTemplate) {
+        if ((logSysEvent.getSysLogTag().toLowerCase().matches(smartMailTemplate.getSysLogTag().toLowerCase()))
+                && (logSysEvent.getMessage().toLowerCase().
+                matches(smartMailTemplate.getTemplateText().toLowerCase()))) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkLogSysEventGroupMatchSmartMailTemplate(LogSysEventGroup logSysEventGroup,
+                                                           SmartMailTemplate smartMailTemplate) {
+        if ((logSysEventGroup.getSysLogTag().toLowerCase().matches(smartMailTemplate.getSysLogTag().toLowerCase()))
+                && (logSysEventGroup.getMessage().toLowerCase().
+                matches(smartMailTemplate.getTemplateText().toLowerCase()))) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkLogSysEventContainExcludeMailTemplate(List<ExcludeMailTemplate> excludeMailTemplateList,
                                                               LogSysEvent logSysEvent) {
         if (excludeMailTemplateList != null) {
             List<String> templateList = excludeMailTemplateList.stream().map(ExcludeMailTemplate::getTemplateText).
                     collect(Collectors.toList());
             for (String template : templateList) {
-                if (logSysEvent.getMessage().toLowerCase().contains(template.toLowerCase()))
+                if (logSysEvent.getMessage().toLowerCase().matches(template.toLowerCase()))
                     return true;
             }
         }
@@ -178,8 +193,7 @@ public class LogSysEventListenerService implements EventListener {
                     getLogSysEventGroupList(startInterval, endInterval);
             if (logSysEventGroups != null) {
                 for (LogSysEventGroup logSysEventGroup : logSysEventGroups) {
-                    if ((logSysEventGroup.getSysLogTag().matches(smartMailTemplate.getSysLogTag())) &&
-                            (logSysEventGroup.getMessage().matches(smartMailTemplate.getTemplateText()))) {
+                    if (checkLogSysEventGroupMatchSmartMailTemplate(logSysEventGroup, smartMailTemplate)) {
                             hitCount += 1;
                     }
                 }
